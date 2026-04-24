@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Энерджайзеры</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=25c3cc9b-776d-4fac-a6c1-753874b63e20&lang=ru_RU"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         @import url('https://fontsource.roboto/files/roboto-cyrillic-400-normal.woff2');
@@ -762,29 +761,10 @@
             border-radius: 2px;
         }
 
-        .leaflet-container {
-            background: var(--bg) !important;
-        }
-
-        .leaflet-control-zoom {
-            display: none !important;
-        }
-
-        .leaflet-control-attribution {
-            background: rgba(26, 26, 46, 0.8) !important;
-            color: var(--text-secondary) !important;
-            font-size: 9px !important;
-        }
-
-        .leaflet-control-attribution a {
-            color: var(--primary) !important;
-        }
-
         .marker-popup {
             font-family: 'Roboto', sans-serif;
             font-size: 13px;
             font-weight: 600;
-            color: var(--bg);
             text-align: center;
             padding: 4px;
         }
@@ -895,10 +875,11 @@
 
 <script>
     let addresses = [];
-    let markers = [];
+    let ymapMarkers = [];
     let extractedItems = [];
-    let mapInstance;
+    let yandexMap = null;
     let selectedExtracted = new Set();
+    let mapReady = false;
 
     const rejectKeywords = [
         '^адрес[:\\s]*$', '^адреса[:\\s]*$', '^адресов[:\\s]*$',
@@ -933,40 +914,7 @@
         'р-н', 'район', 'пл\\.', 'площадь',
         'пр-т', 'пр-кт', 'ш', 'ул', 'бул', 'наб', 'д', 'кв',
         'корп', 'лит', 'оф', 'стр', 'мкр', 'р-н',
-        'индекс', 'почт', '\\d{5,6}',
-        'Москва', 'Московская', 'Кремль', 'Арбат', 'Тверская',
-        'Ленинский', 'Ленина', 'Мира', 'Победы', 'Советская',
-        'Большая', 'Малая', 'Новая', 'Старая', 'Первая', 'Вторая',
-        'Красная', 'Белая', 'Синяя', 'Зелёная',
-        'Садовое', 'Садовая', 'Цветной', 'Цветная',
-        'Лубянка', 'Пушкинская', 'Тверская', 'Охотный', 'Моховая',
-        'Варварка', 'Покровка', 'Ярославское', 'Ленинградское',
-        'Дмитровское', 'Можайское', 'Рублёвское', 'Каширское',
-        'Варшавское', 'Рязанское', 'Новорижское', 'Волоколамское',
-        'Сущёвский', 'Тимирязевский', 'Марфино', 'Останкинский',
-        'Бабушкинский', 'Свиблово', 'Бибирево', 'Отрадное',
-        'Алтуфьевский', 'Северный', 'Бескудниково', 'Ховрино',
-        'Головинский', 'Войковский', 'Сокол', 'Аэропорт',
-        'Коптево', 'Беговой', 'Савёловский', 'Бутырский',
-        'Тимирязевский', 'Марьина роща', 'Останкино', 'Алексеевский',
-        'Ростокино', 'Свиблово', 'Ярославский', 'Богородское',
-        'Преображенское', 'Гольяново', 'Сокольники', 'Красносельский',
-        'Басманный', 'Мещанский', 'Арбат', 'Пресненский',
-        'Хамовники', 'Якиманка', 'Замоскворечье', 'Таганский',
-        'Лефортово', 'Нижегородский', 'Рязанский', 'Выхино-Жулебино',
-        'Кузьминки', 'Капотня', 'Марьино', 'Братеево',
-        'Орехово-Борисово', 'Царицыно', 'Даниловский', 'Нагатинский',
-        'Нагорный', 'Москворецкий', 'Кунцево', 'Можайский',
-        'Фили-Давыдково', 'Очаково-Матвеевское', 'Тропарёво-Никулино',
-        'Раменки', 'Проспект Вернадского', 'Ломоносовский', 'Гагаринский',
-        'Зюзино', 'Черёмушки', 'Академический', 'Коньково',
-        'Тёплый Стан', 'Ясенево', 'Северное Бутово', 'Южное Бутово',
-        'Внуково', 'Солнцево', 'Ново-Переделкино', 'Тропарёво',
-        'Митино', 'Строгино', 'Крылатское', 'Куркино',
-        'Молжаниновский', 'Внуково', 'Тарутинское', 'Щербинка',
-        'Филимонковский', 'Воскресенское', 'Краснопахорское',
-        'Киевское', 'Первомайское', 'Мосрентген', 'Десёновское',
-        'Сосенское', 'Коммунарка', 'Каширское', 'Новопеределкино'
+        'индекс', 'почт', '\\d{5,6}'
     ];
 
     function isLikelyAddress(text) {
@@ -991,77 +939,79 @@
         return false;
     }
 
-    function prepareMoscowQuery(address) {
-        const lower = address.toLowerCase();
-        const hasMoscow = lower.includes('моск') || lower.includes('мск');
-        if (hasMoscow) return address;
-        return 'Москва, ' + address;
-    }
-
-    function initMap() {
-        mapInstance = L.map('map', {
+    ymaps.ready(function() {
+        yandexMap = new ymaps.Map('map', {
             center: [55.7558, 37.6173],
-            zoom: 10,
-            zoomControl: false,
-            minZoom: 5
+            zoom: 10
+        }, {
+            suppressMapOpenBlock: true
         });
+        
+        mapReady = true;
+        console.log('Yandex Map initialized successfully');
+        
+        // Re-render markers if addresses were added before map was ready
+        if (addresses.length > 0) {
+            updateMarkers();
+        }
+    });
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap',
-            maxZoom: 19
-        }).addTo(mapInstance);
-    }
-
-    function createMarkerIcon(number) {
-        const markerColors = [
-            '#3C63F2', '#5B7DF7', '#7B5BF7', '#F75B9D', '#FC3F1D',
-            '#36B37E', '#FF5630', '#6554C0', '#00B8D9', '#FF8B00'
+    function getMarkerPreset(index) {
+        const presets = [
+            'islands#blueCircleIcon',
+            'islands#darkBlueCircleIcon',
+            'islands#violetCircleIcon',
+            'islands#pinkCircleIcon',
+            'islands#redCircleIcon',
+            'islands#greenCircleIcon',
+            'islands#orangeCircleIcon',
+            'islands#purpleCircleIcon',
+            'islands#lightBlueCircleIcon',
+            'islands#yellowCircleIcon'
         ];
-        const color = markerColors[(number - 1) % markerColors.length];
-
-        const htmlStr = `
-            <div style="
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 32px;
-                height: 32px;
-                border-radius: 50%;
-                background: ${color};
-                color: white;
-                font-weight: 900;
-                font-size: 15px;
-                font-family: 'Roboto', sans-serif;
-                box-shadow: 0 3px 10px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.2);
-                border: 2px solid rgba(255,255,255,0.3);
-                line-height: 1;
-            ">${number}</div>
-        `;
-
-        return L.divIcon({
-            className: '',
-            html: htmlStr,
-            iconSize: [32, 32],
-            iconAnchor: [16, 16],
-            popupAnchor: [0, -16]
-        });
+        return presets[(index - 1) % presets.length];
     }
 
     function addMarkerToMap(addr, index) {
-        if (!addr.lat || !addr.lng) return;
+        if (!addr.lat || !addr.lng || !yandexMap) {
+            console.warn('Cannot add marker: missing data', addr, index);
+            return;
+        }
 
-        const icon = createMarkerIcon(index);
-        const marker = L.marker([addr.lat, addr.lng], { icon })
-            .addTo(mapInstance)
-            .bindPopup(`<div class="marker-popup"><b>#${index}</b><br>${addr.text}</div>`);
+        try {
+            const marker = new ymaps.Placemark(
+                [addr.lat, addr.lng],
+                {
+                    iconContent: String(index),
+                    balloonContentHeader: 'Адрес #' + index,
+                    balloonContentBody: addr.text,
+                    hintContent: addr.text
+                },
+                {
+                    preset: getMarkerPreset(index)
+                }
+            );
 
-        markers.push(marker);
+            yandexMap.geoObjects.add(marker);
+            ymapMarkers.push(marker);
+            console.log('Marker added:', index, addr.text);
+        } catch (e) {
+            console.error('Error adding marker:', e);
+        }
     }
 
     function updateMarkers() {
-        markers.forEach(m => mapInstance.removeLayer(m));
-        markers = [];
+        if (!yandexMap) {
+            console.warn('Map not ready yet, waiting...');
+            setTimeout(updateMarkers, 500);
+            return;
+        }
 
+        // Clear all existing markers
+        yandexMap.geoObjects.removeAll();
+        ymapMarkers = [];
+
+        // Add all markers
         addresses.forEach((addr, i) => {
             addMarkerToMap(addr, i + 1);
         });
@@ -1071,13 +1021,28 @@
     }
 
     function fitAllMarkers() {
-        if (markers.length === 0) return;
-        const group = new L.featureGroup(markers);
-        mapInstance.fitBounds(group.getBounds().pad(0.2));
+        if (!yandexMap || ymapMarkers.length === 0) return;
+        
+        const bounds = yandexMap.geoObjects.getBounds();
+        if (bounds) {
+            yandexMap.setBounds(bounds, {
+                checkZoomRange: true,
+                zoomMargin: 50
+            });
+        }
     }
 
-    function mapZoomIn() { mapInstance.zoomIn(); }
-    function mapZoomOut() { mapInstance.zoomOut(); }
+    function mapZoomIn() {
+        if (!yandexMap) return;
+        const currentZoom = yandexMap.getZoom();
+        yandexMap.setZoom(currentZoom + 1, { duration: 200 });
+    }
+
+    function mapZoomOut() {
+        if (!yandexMap) return;
+        const currentZoom = yandexMap.getZoom();
+        yandexMap.setZoom(currentZoom - 1, { duration: 200 });
+    }
 
     function updateAddressList() {
         const container = document.getElementById('addressList');
@@ -1123,16 +1088,20 @@
 
     function locateAddress(idx) {
         const addr = addresses[idx];
-        if (!addr.lat || !addr.lng) return;
+        if (!addr.lat || !addr.lng || !yandexMap) return;
 
-        mapInstance.setView([addr.lat, addr.lng], 16, { animate: true });
-        if (markers[idx]) markers[idx].openPopup();
+        yandexMap.setCenter([addr.lat, addr.lng], 16, { duration: 300 });
+        
+        if (ymapMarkers[idx]) {
+            setTimeout(() => {
+                ymapMarkers[idx].balloon.open();
+            }, 350);
+        }
 
         const mapSection = document.getElementById('mapSection');
         if (!mapSection.classList.contains('expanded')) {
             mapSection.classList.add('expanded');
         }
-        setTimeout(() => mapInstance.invalidateSize(), 450);
     }
 
     function deleteAddress(idx) {
@@ -1150,8 +1119,8 @@
         btns[idxMap[tab]].classList.add('active');
         document.getElementById('tab-' + tab).classList.add('active');
 
-        if (tab === 'list') {
-            setTimeout(() => mapInstance.invalidateSize(), 100);
+        if (tab === 'list' && yandexMap) {
+            setTimeout(() => yandexMap.container.fitToViewport(), 100);
         }
     }
 
@@ -1264,6 +1233,28 @@
         removeImage();
     }
 
+    function cleanAddressForSearch(rawAddress) {
+        let addr = rawAddress.trim();
+        
+        // Replace common OCR errors
+        addr = addr.replace(/[|ІІ]/g, 'l');
+        addr = addr.replace(/\s+/g, ' ').trim();
+        addr = addr.replace(/^[\s\-\*\.\#\>\|]*/, '');
+        addr = addr.replace(/[\s\-\*\.\#\>\|]*$/, '');
+        
+        // Normalize address abbreviations
+        addr = addr.replace(/ул\s/gi, 'ул. ');
+        addr = addr.replace(/пр\s/gi, 'пр. ');
+        addr = addr.replace(/пер\s/gi, 'пер. ');
+        addr = addr.replace(/бул\s/gi, 'бул. ');
+        addr = addr.replace(/д\s/gi, 'д. ');
+        addr = addr.replace(/кв\s/gi, 'кв. ');
+        addr = addr.replace(/корп\s/gi, 'корп. ');
+        addr = addr.replace(/стр\s/gi, 'стр. ');
+        
+        return addr;
+    }
+
     async function geocodeSelected() {
         const btn = document.getElementById('geocodeBtn');
         const selectedItems = extractedItems.filter(item => selectedExtracted.has(item.id));
@@ -1289,9 +1280,10 @@
                     failed++;
                 }
             } catch (e) {
+                console.error('Geocode error for:', item.text, e);
                 failed++;
             }
-            await sleep(1100);
+            await sleep(1200);
         }
 
         btn.disabled = false;
@@ -1315,45 +1307,52 @@
         }
     }
 
-    async function geocodeAddress(address) {
-        const query = prepareMoscowQuery(address);
-        const moscowBbox = '37.21,55.49,37.95,55.93';
-
-        try {
-            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&viewbox=${moscowBbox}&bounded=1`;
-
-            const response = await fetch(url, {
-                headers: { 'User-Agent': 'EnergizersApp/1.0' }
-            });
-            const data = await response.json();
-
-            if (data.length > 0) {
-                const lat = parseFloat(data[0].lat);
-                const lng = parseFloat(data[0].lon);
-                if (lat >= 55.3 && lat <= 56.1 && lng >= 37.0 && lng <= 38.1) {
-                    return { lat, lng };
-                }
-            }
-
-            const fallbackUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=ru`;
-            const fallbackResp = await fetch(fallbackUrl, {
-                headers: { 'User-Agent': 'EnergizersApp/1.0' }
-            });
-            const fallbackData = await fallbackResp.json();
-
-            if (fallbackData.length > 0) {
-                const lat = parseFloat(fallbackData[0].lat);
-                const lng = parseFloat(fallbackData[0].lon);
-                if (lat >= 55.3 && lat <= 56.1 && lng >= 37.0 && lng <= 38.1) {
-                    return { lat, lng };
-                }
-            }
-
-            return null;
-        } catch (e) {
-            console.error('Geocode error:', e);
-            return null;
+    async function geocodeAddress(rawAddress) {
+        const cleaned = cleanAddressForSearch(rawAddress);
+        
+        const queries = [];
+        
+        // Multiple query variations for better matching
+        queries.push(`Москва, ${cleaned}`);
+        queries.push(cleaned);
+        queries.push(`Москва ${cleaned}`);
+        queries.push(`г. Москва, ${cleaned}`);
+        
+        // Extract street part if possible
+        const streetMatch = cleaned.match(/(?:ул|пр|пер|бул|ш|наб|пл|пр-т|пр-кт)\.?\s+[^,\n]+/i);
+        if (streetMatch) {
+            queries.push(`Москва, ${streetMatch[0]}`);
         }
+        
+        for (const query of queries) {
+            try {
+                const result = await ymaps.geocode(query, {
+                    results: 3,
+                    boundedBy: [[55.14, 36.89], [56.02, 37.96]],
+                    strictBounds: false
+                });
+                
+                const firstResult = result.geoObjects.get(0);
+                if (firstResult) {
+                    const coords = firstResult.geometry.getCoordinates();
+                    const lat = coords[0];
+                    const lng = coords[1];
+                    
+                    // Verify within Moscow bounds
+                    if (lat >= 55.3 && lat <= 56.1 && lng >= 37.0 && lng <= 38.1) {
+                        console.log('Found address:', query, '->', lat, lng);
+                        return { lat, lng };
+                    }
+                }
+            } catch (e) {
+                console.warn('Yandex geocode failed for:', query, e);
+            }
+            
+            await sleep(500);
+        }
+        
+        console.log('No result found for:', rawAddress);
+        return null;
     }
 
     function sleep(ms) {
@@ -1413,7 +1412,7 @@
             } else {
                 failed++;
             }
-            await sleep(1100);
+            await sleep(1200);
         }
 
         updateMarkers();
@@ -1429,7 +1428,9 @@
     function toggleMap() {
         const section = document.getElementById('mapSection');
         section.classList.toggle('expanded');
-        setTimeout(() => mapInstance.invalidateSize(), 450);
+        setTimeout(() => {
+            if (yandexMap) yandexMap.container.fitToViewport();
+        }, 450);
     }
 
     function showToast(message, type = '') {
@@ -1443,8 +1444,9 @@
         }, 3000);
     }
 
+    // Initialize
     window.addEventListener('DOMContentLoaded', () => {
-        initMap();
+        console.log('Page loaded, waiting for Yandex Maps API...');
     });
 </script>
 
