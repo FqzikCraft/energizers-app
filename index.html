@@ -27,6 +27,10 @@
             --text-secondary: #8B8BA7;
             --border: #333355;
             --success: #4CAF50;
+            --night: #4A3B8C;
+            --night-light: #6B5BAA;
+            --day: #F5A623;
+            --day-light: #FFD580;
             --radius: 16px;
         }
 
@@ -77,32 +81,63 @@
             color: var(--text-secondary);
         }
 
+        .header-right {
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .shift-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .shift-badge.night {
+            background: rgba(74, 59, 140, 0.3);
+            color: #B8A8E8;
+            border: 1px solid rgba(74, 59, 140, 0.5);
+        }
+
+        .shift-badge.day {
+            background: rgba(245, 166, 35, 0.2);
+            color: var(--day-light);
+            border: 1px solid rgba(245, 166, 35, 0.4);
+        }
+
         .tabs {
             display: flex;
             gap: 4px;
-            padding: 8px 16px;
+            padding: 8px 12px;
             background: var(--bg);
             position: sticky;
             top: 56px;
             z-index: 999;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .tab-btn {
             flex: 1;
-            padding: 10px 12px;
+            min-width: fit-content;
+            padding: 8px 10px;
             border: none;
             border-radius: 12px;
             background: var(--bg-card);
             color: var(--text-secondary);
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.25s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 4px;
             font-family: 'Roboto', sans-serif;
+            white-space: nowrap;
         }
 
         .tab-btn.active {
@@ -112,8 +147,9 @@
         }
 
         .tab-btn svg {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
         }
 
         .content-area {
@@ -177,16 +213,8 @@
             color: var(--primary);
         }
 
-        .upload-text {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .upload-hint {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
+        .upload-text { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .upload-hint { font-size: 12px; color: var(--text-secondary); }
 
         .upload-preview {
             width: 100%;
@@ -196,15 +224,10 @@
             object-fit: cover;
         }
 
-        .upload-zone.has-image .upload-preview {
-            display: block;
-        }
-
+        .upload-zone.has-image .upload-preview { display: block; }
         .upload-zone.has-image .upload-icon,
         .upload-zone.has-image .upload-text,
-        .upload-zone.has-image .upload-hint {
-            display: none;
-        }
+        .upload-zone.has-image .upload-hint { display: none; }
 
         .remove-image-btn {
             position: absolute;
@@ -224,18 +247,10 @@
             z-index: 5;
         }
 
-        .upload-zone.has-image .remove-image-btn {
-            display: flex;
-        }
+        .upload-zone.has-image .remove-image-btn { display: flex; }
 
-        .ocr-progress {
-            margin-top: 16px;
-            display: none;
-        }
-
-        .ocr-progress.visible {
-            display: block;
-        }
+        .ocr-progress { margin-top: 16px; display: none; }
+        .ocr-progress.visible { display: block; }
 
         .progress-bar-bg {
             height: 6px;
@@ -252,12 +267,7 @@
             width: 0%;
         }
 
-        .progress-text {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 6px;
-            text-align: center;
-        }
+        .progress-text { font-size: 12px; color: var(--text-secondary); margin-top: 6px; text-align: center; }
 
         .manual-input-group {
             display: flex;
@@ -278,13 +288,8 @@
             transition: border-color 0.2s;
         }
 
-        .manual-input:focus {
-            border-color: var(--primary);
-        }
-
-        .manual-input::placeholder {
-            color: var(--text-secondary);
-        }
+        .manual-input:focus { border-color: var(--primary); }
+        .manual-input::placeholder { color: var(--text-secondary); }
 
         .add-btn {
             padding: 14px 20px;
@@ -303,14 +308,9 @@
             font-family: 'Roboto', sans-serif;
         }
 
-        .add-btn:active {
-            transform: scale(0.95);
-            background: var(--primary-dark);
-        }
+        .add-btn:active { transform: scale(0.95); background: var(--primary-dark); }
 
-        .bulk-input-area {
-            margin-top: 12px;
-        }
+        .bulk-input-area { margin-top: 12px; }
 
         .bulk-textarea {
             width: 100%;
@@ -327,13 +327,8 @@
             line-height: 1.6;
         }
 
-        .bulk-textarea:focus {
-            border-color: var(--primary);
-        }
-
-        .bulk-textarea::placeholder {
-            color: var(--text-secondary);
-        }
+        .bulk-textarea:focus { border-color: var(--primary); }
+        .bulk-textarea::placeholder { color: var(--text-secondary); }
 
         .bulk-btn {
             width: 100%;
@@ -350,18 +345,10 @@
             font-family: 'Roboto', sans-serif;
         }
 
-        .bulk-btn:active {
-            transform: scale(0.98);
-        }
+        .bulk-btn:active { transform: scale(0.98); }
 
-        .extracted-section {
-            margin-top: 16px;
-            display: none;
-        }
-
-        .extracted-section.visible {
-            display: block;
-        }
+        .extracted-section { margin-top: 16px; display: none; }
+        .extracted-section.visible { display: block; }
 
         .extracted-header {
             display: flex;
@@ -370,11 +357,7 @@
             margin-bottom: 8px;
         }
 
-        .extracted-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
+        .extracted-title { font-size: 14px; font-weight: 600; color: var(--text-secondary); }
 
         .clear-btn {
             padding: 6px 14px;
@@ -406,9 +389,7 @@
             transition: background 0.2s;
         }
 
-        .extracted-item:active {
-            background: rgba(60, 99, 242, 0.15);
-        }
+        .extracted-item:active { background: rgba(60, 99, 242, 0.15); }
 
         .extracted-item .item-check {
             width: 20px;
@@ -422,22 +403,9 @@
             transition: all 0.2s;
         }
 
-        .extracted-item.selected .item-check {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
-
-        .extracted-item.selected .item-check::after {
-            content: '✓';
-            color: white;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .extracted-item .item-text {
-            flex: 1;
-            line-height: 1.4;
-        }
+        .extracted-item.selected .item-check { background: var(--primary); border-color: var(--primary); }
+        .extracted-item.selected .item-check::after { content: '✓'; color: white; font-size: 12px; font-weight: 700; }
+        .extracted-item .item-text { flex: 1; line-height: 1.4; }
 
         .extracted-item .item-reject {
             font-size: 11px;
@@ -463,20 +431,10 @@
             box-shadow: 0 4px 20px rgba(60, 99, 242, 0.3);
         }
 
-        .geocode-btn:active {
-            transform: scale(0.98);
-        }
+        .geocode-btn:active { transform: scale(0.98); }
+        .geocode-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .geocode-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .address-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        .address-list { display: flex; flex-direction: column; gap: 8px; }
 
         .address-card {
             background: var(--bg-card);
@@ -508,34 +466,11 @@
             box-shadow: 0 3px 10px rgba(60, 99, 242, 0.4);
         }
 
-        .address-card:nth-child(2) .address-marker { background: #5B7DF7; }
-        .address-card:nth-child(3) .address-marker { background: #7B5BF7; }
-        .address-card:nth-child(4) .address-marker { background: #F75B9D; }
-        .address-card:nth-child(5) .address-marker { background: var(--accent); }
+        .address-info { flex: 1; min-width: 0; }
+        .address-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; word-break: break-word; }
+        .address-coords { font-size: 11px; color: var(--text-secondary); font-family: monospace; }
 
-        .address-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .address-name {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 3px;
-            word-break: break-word;
-        }
-
-        .address-coords {
-            font-size: 11px;
-            color: var(--text-secondary);
-            font-family: monospace;
-        }
-
-        .address-actions {
-            display: flex;
-            gap: 6px;
-            flex-shrink: 0;
-        }
+        .address-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
         .addr-action-btn {
             width: 32px;
@@ -551,39 +486,13 @@
             transition: all 0.2s;
         }
 
-        .addr-action-btn.delete:active {
-            background: rgba(252, 63, 29, 0.2);
-            color: var(--accent);
-        }
+        .addr-action-btn.delete:active { background: rgba(252, 63, 29, 0.2); color: var(--accent); }
+        .addr-action-btn.locate { color: var(--primary); }
 
-        .addr-action-btn.locate {
-            color: var(--primary);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
-        }
-
-        .empty-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 16px;
-            opacity: 0.3;
-        }
-
-        .empty-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text);
-        }
-
-        .empty-desc {
-            font-size: 13px;
-            line-height: 1.5;
-        }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+        .empty-icon { width: 80px; height: 80px; margin: 0 auto 16px; opacity: 0.3; }
+        .empty-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+        .empty-desc { font-size: 13px; line-height: 1.5; }
 
         .map-section {
             position: fixed;
@@ -597,9 +506,7 @@
             transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .map-section.expanded {
-            height: 60vh;
-        }
+        .map-section.expanded { height: 60vh; }
 
         .map-toggle {
             position: absolute;
@@ -619,12 +526,7 @@
             z-index: 999;
         }
 
-        .map-toggle-line {
-            width: 24px;
-            height: 3px;
-            background: var(--text-secondary);
-            border-radius: 2px;
-        }
+        .map-toggle-line { width: 24px; height: 3px; background: var(--text-secondary); border-radius: 2px; }
 
         .map-toggle svg {
             position: absolute;
@@ -635,14 +537,9 @@
             transition: transform 0.3s;
         }
 
-        .map-section.expanded .map-toggle svg {
-            transform: rotate(180deg);
-        }
+        .map-section.expanded .map-toggle svg { transform: rotate(180deg); }
 
-        #map {
-            width: 100%;
-            height: 100%;
-        }
+        #map { width: 100%; height: 100%; }
 
         .map-stats {
             position: absolute;
@@ -667,12 +564,7 @@
             gap: 4px;
         }
 
-        .stat-chip .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--primary);
-        }
+        .stat-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
 
         .map-zoom-btn {
             position: absolute;
@@ -719,18 +611,9 @@
             box-shadow: 0 8px 30px rgba(0,0,0,0.3);
         }
 
-        .toast.visible {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .toast.success {
-            border-color: var(--success);
-        }
-
-        .toast.error {
-            border-color: var(--accent);
-        }
+        .toast.visible { transform: translateY(0); opacity: 1; }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--accent); }
 
         .geocoding-spinner {
             display: inline-block;
@@ -744,22 +627,11 @@
             vertical-align: middle;
         }
 
-        @keyframes spinAnim {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spinAnim { to { transform: rotate(360deg); } }
 
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 2px;
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
         .marker-popup {
             font-family: 'Roboto', sans-serif;
@@ -767,6 +639,415 @@
             font-weight: 600;
             text-align: center;
             padding: 4px;
+        }
+
+        /* Shift Section Styles */
+        .shift-header-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .shift-type-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .shift-type-value {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .shift-type-value.night { color: #B8A8E8; }
+        .shift-type-value.day { color: var(--day-light); }
+
+        .shift-date {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .shift-summary-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .summary-card .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .summary-card .value {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .summary-card .sub {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .summary-card.money .value { color: var(--success); }
+        .summary-card.battery .value { color: var(--primary); }
+        .summary-card.time .value { color: var(--accent); }
+        .summary-card.hours .value { color: #00B8D9; }
+
+        .shift-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .shift-action-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .shift-action-btn:active { transform: scale(0.98); }
+
+        .shift-action-btn.add-battery {
+            background: linear-gradient(135deg, var(--primary), #5B7DF7);
+            color: white;
+            box-shadow: 0 4px 20px rgba(60, 99, 242, 0.3);
+        }
+
+        .shift-action-btn.add-hours {
+            background: linear-gradient(135deg, #00B8D9, #4DD9E8);
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 184, 217, 0.3);
+        }
+
+        .shift-action-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .battery-log {
+            margin-top: 16px;
+        }
+
+        .battery-log-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .battery-log-item {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .battery-log-item .left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .battery-log-item .battery-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(60, 99, 242, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .battery-log-item .battery-icon svg {
+            width: 20px;
+            height: 20px;
+            color: var(--primary);
+        }
+
+        .battery-log-item .info .main {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .battery-log-item .info .sub {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .battery-log-item .money {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .battery-log-item .delete-log {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+        }
+
+        .battery-log-item .delete-log:active {
+            background: rgba(252, 63, 29, 0.2);
+            color: var(--accent);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 10000;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 20px 20px 0 0;
+            padding: 24px;
+            width: 100%;
+            max-width: 480px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: var(--text-secondary);
+            border-radius: 2px;
+            margin: 0 auto 16px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .modal-input-group {
+            margin-bottom: 12px;
+        }
+
+        .modal-input-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-input);
+            color: var(--text);
+            font-size: 16px;
+            font-family: 'Roboto', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .modal-input:focus { border-color: var(--primary); }
+        .modal-input::placeholder { color: var(--text-secondary); }
+
+        .modal-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-row .modal-input-group { flex: 1; }
+
+        .modal-submit {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .modal-submit:active { transform: scale(0.98); }
+
+        .modal-cancel {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .price-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Stats Page */
+        .stats-period-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+
+        .stats-period-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .stats-period-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .stats-card {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .stats-card .icon-wrap {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+        }
+
+        .stats-card .icon-wrap svg { width: 22px; height: 22px; }
+        .stats-card .icon-wrap.blue { background: rgba(60, 99, 242, 0.15); color: var(--primary); }
+        .stats-card .icon-wrap.green { background: rgba(76, 175, 80, 0.15); color: var(--success); }
+        .stats-card .icon-wrap.red { background: rgba(252, 63, 29, 0.15); color: var(--accent); }
+        .stats-card .icon-wrap.cyan { background: rgba(0, 184, 217, 0.15); color: #00B8D9; }
+
+        .stats-card .val { font-size: 20px; font-weight: 800; }
+        .stats-card .lbl { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+        .stats-section {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+
+        .stats-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stats-row:last-child { border-bottom: none; }
+
+        .stats-row .label { font-size: 14px; color: var(--text-secondary); }
+        .stats-row .value { font-size: 14px; font-weight: 700; }
+
+        .stats-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .stats-empty svg {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 12px;
+            opacity: 0.3;
         }
 
         @media (min-width: 768px) {
@@ -787,6 +1068,12 @@
         <div class="app-title">Энерджайзеры</div>
         <div class="app-subtitle">developer by fQzik</div>
     </div>
+    <div class="header-right">
+        <div class="shift-badge" id="shiftBadge">
+            <span id="shiftIcon">🌙</span>
+            <span id="shiftText">Ночь</span>
+        </div>
+    </div>
 </header>
 
 <div class="tabs">
@@ -802,9 +1089,18 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
         Список
     </button>
+    <button class="tab-btn" onclick="switchTab('shift')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M6 12h.01M10 8h.01M10 12h.01"/><circle cx="16" cy="10" r="3"/></svg>
+        Смена
+    </button>
+    <button class="tab-btn" onclick="switchTab('stats')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Статистика
+    </button>
 </div>
 
 <div class="content-area">
+    <!-- Scan Tab -->
     <div class="tab-content active" id="tab-scan">
         <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
             <div class="upload-icon">
@@ -816,12 +1112,10 @@
             <button class="remove-image-btn" onclick="event.stopPropagation(); removeImage()">✕</button>
         </div>
         <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
-
         <div class="ocr-progress" id="ocrProgress">
             <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
             <div class="progress-text" id="progressText">Распознавание текста...</div>
         </div>
-
         <div class="extracted-section" id="extractedSection">
             <div class="extracted-header">
                 <span class="extracted-title">Распознанные адреса</span>
@@ -832,29 +1126,103 @@
         </div>
     </div>
 
+    <!-- Manual Tab -->
     <div class="tab-content" id="tab-manual">
         <div class="manual-input-group">
             <input type="text" class="manual-input" id="manualInput" placeholder="Введите адрес..." onkeypress="if(event.key==='Enter') addManualAddress()">
             <button class="add-btn" onclick="addManualAddress()">+</button>
         </div>
         <div class="bulk-input-area">
-            <div style="font-size:13px; color:var(--text-secondary); margin-bottom:8px; font-weight:600;">Массовый ввод (каждый адрес с новой строки):</div>
-            <textarea class="bulk-textarea" id="bulkInput" placeholder="ул. Пушкина, д. 10&#10;пр. Ленина, д. 25, кв. 3&#10;бул. Шевченко, 7"></textarea>
+            <div style="font-size:13px; color:var(--text-secondary); margin-bottom:8px; font-weight:600;">Массовый ввод:</div>
+            <textarea class="bulk-textarea" id="bulkInput" placeholder="ул. Пушкина, д. 10&#10;пр. Ленина, д. 25, кв. 3"></textarea>
             <button class="bulk-btn" onclick="addBulkAddresses()">Добавить все адреса</button>
         </div>
     </div>
 
+    <!-- List Tab -->
     <div class="tab-content" id="tab-list">
         <div class="address-list" id="addressList">
             <div class="empty-state">
                 <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 <div class="empty-title">Нет адресов</div>
-                <div class="empty-desc">Загрузите скриншот или введите адреса вручную, чтобы они появились на карте</div>
+                <div class="empty-desc">Загрузите скриншот или введите адреса вручную</div>
             </div>
         </div>
     </div>
+
+    <!-- Shift Tab -->
+    <div class="tab-content" id="tab-shift">
+        <div class="shift-header-card">
+            <div class="shift-type-label">Текущая смена</div>
+            <div class="shift-type-value" id="shiftValue">🌙 Ночная</div>
+            <div class="shift-date" id="shiftDate"></div>
+        </div>
+
+        <div class="shift-summary-cards">
+            <div class="summary-card battery">
+                <div class="label">Аккумуляторы</div>
+                <div class="value" id="todayBatteryCount">0</div>
+                <div class="sub">за смену</div>
+            </div>
+            <div class="summary-card money">
+                <div class="label">Заработано</div>
+                <div class="value" id="todayEarnings">0 ₽</div>
+                <div class="sub">за смену</div>
+            </div>
+            <div class="summary-card hours">
+                <div class="label">Отработано</div>
+                <div class="value" id="todayHours">0ч</div>
+                <div class="sub">за смену</div>
+            </div>
+            <div class="summary-card time">
+                <div class="label">Потрачено</div>
+                <div class="value" id="todayTimeSpent">0м</div>
+                <div class="sub">только учёт</div>
+            </div>
+        </div>
+
+        <div class="shift-actions">
+            <button class="shift-action-btn add-battery" onclick="openBatteryModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="10" rx="2"/>
+                    <path d="M22 11v2"/>
+                    <line x1="6" y1="11" x2="10" y2="11"/>
+                    <line x1="10" y1="11" x2="10" y2="13"/>
+                    <line x1="10" y1="13" x2="14" y2="13"/>
+                    <line x1="14" y1="13" x2="14" y2="11"/>
+                    <line x1="14" y1="11" x2="18" y2="11"/>
+                </svg>
+                Добавить аккумуляторы
+            </button>
+            <button class="shift-action-btn add-hours" onclick="openHoursModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Время отработано
+            </button>
+        </div>
+
+        <div class="battery-log" id="batteryLog">
+            <div class="battery-log-title">Записи за смену</div>
+            <div id="batteryLogList"></div>
+        </div>
+    </div>
+
+    <!-- Stats Tab -->
+    <div class="tab-content" id="tab-stats">
+        <div class="stats-period-tabs">
+            <button class="stats-period-btn active" onclick="setStatsPeriod('today', this)">Сегодня</button>
+            <button class="stats-period-btn" onclick="setStatsPeriod('week', this)">Неделя</button>
+            <button class="stats-period-btn" onclick="setStatsPeriod('month', this)">Месяц</button>
+            <button class="stats-period-btn" onclick="setStatsPeriod('all', this)">Всё</button>
+        </div>
+
+        <div id="statsContent"></div>
+    </div>
 </div>
 
+<!-- Map -->
 <div class="map-section" id="mapSection">
     <div class="map-toggle" onclick="toggleMap()">
         <div class="map-toggle-line"></div>
@@ -871,16 +1239,526 @@
     <div id="map"></div>
 </div>
 
+<!-- Battery Modal -->
+<div class="modal-overlay" id="batteryModal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Добавить аккумуляторы</div>
+        <div class="modal-input-group">
+            <label>Количество аккумуляторов</label>
+            <input type="number" class="modal-input" id="batteryCount" placeholder="Сколько поменяно..." min="1" inputmode="numeric">
+            <div class="price-hint">1 аккумулятор = 65 ₽</div>
+        </div>
+        <div class="modal-input-group">
+            <label>Потрачено времени (минуты, необязательно)</label>
+            <input type="number" class="modal-input" id="batteryTime" placeholder="Сколько минут..." min="0" inputmode="numeric">
+            <div class="price-hint">Учитывается только в статистике</div>
+        </div>
+        <button class="modal-submit" onclick="addBatteryRecord()">Добавить</button>
+        <button class="modal-cancel" onclick="closeBatteryModal()">Отмена</button>
+    </div>
+</div>
+
+<!-- Hours Modal -->
+<div class="modal-overlay" id="hoursModal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Время отработано</div>
+        <div class="modal-row">
+            <div class="modal-input-group">
+                <label>Часы</label>
+                <input type="number" class="modal-input" id="hoursInput" placeholder="0" min="0" max="24" inputmode="numeric">
+            </div>
+            <div class="modal-input-group">
+                <label>Минуты</label>
+                <input type="number" class="modal-input" id="minutesInput" placeholder="0" min="0" max="59" inputmode="numeric">
+            </div>
+        </div>
+        <div class="price-hint" style="margin-top:8px;">1 час = 95 ₽ (минуты пропорционально)</div>
+        <button class="modal-submit" onclick="addHoursRecord()">Добавить</button>
+        <button class="modal-cancel" onclick="closeHoursModal()">Отмена</button>
+    </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
+    // State
     let addresses = [];
     let ymapMarkers = [];
     let extractedItems = [];
     let yandexMap = null;
-    let selectedExtracted = new Set();
     let mapReady = false;
+    let selectedExtracted = new Set();
+    let currentStatsPeriod = 'today';
 
+    // Data storage
+    function getShiftRecords() {
+        try {
+            return JSON.parse(localStorage.getItem('energizer_shift_records') || '[]');
+        } catch(e) { return []; }
+    }
+
+    function saveShiftRecords(records) {
+        localStorage.setItem('energizer_shift_records', JSON.stringify(records));
+    }
+
+    // Shift detection
+    function getCurrentShift() {
+        const now = new Date();
+        const hours = now.getHours();
+        if (hours >= 21 || hours < 9) {
+            return { type: 'night', label: 'Ночная', icon: '🌙' };
+        } else {
+            return { type: 'day', label: 'Дневная', icon: '☀️' };
+        }
+    }
+
+    function getShiftDateKey() {
+        const now = new Date();
+        const shift = getCurrentShift();
+        // Night shift starting at 21:00 belongs to the previous date
+        if (shift.type === 'night' && now.getHours() >= 21) {
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
+            return yesterday.toISOString().split('T')[0] + '_night';
+        } else if (shift.type === 'night' && now.getHours() < 9) {
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
+            return yesterday.toISOString().split('T')[0] + '_night';
+        } else {
+            return now.toISOString().split('T')[0] + '_' + shift.type;
+        }
+    }
+
+    function getShiftDateDisplay() {
+        const now = new Date();
+        const shift = getCurrentShift();
+        let dateStr;
+        
+        if (shift.type === 'night' && now.getHours() >= 21) {
+            dateStr = now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) + ' — ' + 
+                      new Date(now.getTime() + 86400000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+        } else if (shift.type === 'night' && now.getHours() < 9) {
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
+            dateStr = yesterday.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) + ' — ' + 
+                      now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+        } else {
+            dateStr = now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+        
+        return dateStr;
+    }
+
+    function getTodayRecords() {
+        const dateKey = getShiftDateKey();
+        return getShiftRecords().filter(r => r.dateKey === dateKey);
+    }
+
+    function getRecordsForPeriod(period) {
+        const records = getShiftRecords();
+        const now = new Date();
+        
+        if (period === 'all') return records;
+        
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        if (period === 'today') {
+            return records.filter(r => {
+                const rDate = new Date(r.timestamp);
+                const rDay = new Date(rDate.getFullYear(), rDate.getMonth(), rDate.getDate());
+                return rDay.getTime() === today.getTime();
+            });
+        }
+        
+        if (period === 'week') {
+            const weekStart = new Date(today);
+            weekStart.setDate(weekStart.getDate() - 7);
+            return records.filter(r => {
+                const rDate = new Date(r.timestamp);
+                return rDate >= weekStart && rDate <= now;
+            });
+        }
+        
+        if (period === 'month') {
+            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+            return records.filter(r => {
+                const rDate = new Date(r.timestamp);
+                return rDate >= monthStart && rDate <= now;
+            });
+        }
+        
+        return records;
+    }
+
+    function updateShiftUI() {
+        const shift = getCurrentShift();
+        
+        // Header badge
+        const badge = document.getElementById('shiftBadge');
+        badge.className = 'shift-badge ' + shift.type;
+        document.getElementById('shiftIcon').textContent = shift.icon;
+        document.getElementById('shiftText').textContent = shift.label;
+        
+        // Shift card
+        document.getElementById('shiftValue').textContent = shift.icon + ' ' + shift.label;
+        document.getElementById('shiftValue').className = 'shift-type-value ' + shift.type;
+        document.getElementById('shiftDate').textContent = getShiftDateDisplay();
+        
+        // Summary
+        const records = getTodayRecords();
+        let totalBatteries = 0;
+        let totalMoney = 0;
+        let totalHours = 0;
+        let totalMinutes = 0;
+        let totalTimeSpent = 0;
+        
+        records.forEach(r => {
+            if (r.type === 'battery') {
+                totalBatteries += r.count;
+                totalMoney += r.count * 65;
+                if (r.timeSpent) totalTimeSpent += r.timeSpent;
+            } else if (r.type === 'hours') {
+                totalHours += r.hours;
+                totalMinutes += r.minutes;
+                const totalH = r.hours + r.minutes / 60;
+                totalMoney += Math.round(totalH * 95);
+            }
+        });
+        
+        document.getElementById('todayBatteryCount').textContent = totalBatteries;
+        document.getElementById('todayEarnings').textContent = totalMoney + ' ₽';
+        
+        const displayHours = totalHours + Math.floor(totalMinutes / 60);
+        const displayMin = totalMinutes % 60;
+        document.getElementById('todayHours').textContent = displayMin > 0 ? `${displayHours}ч ${displayMin}м` : `${displayHours}ч`;
+        document.getElementById('todayTimeSpent').textContent = totalTimeSpent + 'м';
+        
+        // Battery log
+        renderBatteryLog(records);
+    }
+
+    function renderBatteryLog(records) {
+        const container = document.getElementById('batteryLogList');
+        
+        if (records.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:var(--text-secondary); font-size:13px; padding:20px;">Нет записей за смену</div>';
+            return;
+        }
+        
+        const sorted = [...records].sort((a, b) => b.timestamp - a.timestamp);
+        
+        container.innerHTML = sorted.map((r, idx) => {
+            const time = new Date(r.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            
+            if (r.type === 'battery') {
+                const money = r.count * 65;
+                return `
+                    <div class="battery-log-item">
+                        <div class="left">
+                            <div class="battery-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="7" width="20" height="10" rx="2"/>
+                                    <path d="M22 11v2"/>
+                                    <line x1="8" y1="10" x2="12" y2="14"/>
+                                    <line x1="12" y1="14" x2="16" y2="10"/>
+                                </svg>
+                            </div>
+                            <div class="info">
+                                <div class="main">${r.count} аккумулятор${r.count === 1 ? '' : r.count < 5 ? 'а' : 'ов'}</div>
+                                <div class="sub">${time}${r.timeSpent ? ' · потрачено ' + r.timeSpent + ' мин' : ''}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;">
+                            <span class="money">+${money} ₽</span>
+                            <button class="delete-log" onclick="deleteRecord(${r.id})">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else if (r.type === 'hours') {
+                const totalH = r.hours + r.minutes / 60;
+                const money = Math.round(totalH * 95);
+                const displayMin = r.minutes > 0 ? ' ' + r.minutes + 'м' : '';
+                return `
+                    <div class="battery-log-item">
+                        <div class="left">
+                            <div class="battery-icon" style="background:rgba(0,184,217,0.15);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#00B8D9" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                            </div>
+                            <div class="info">
+                                <div class="main">Отработано: ${r.hours}ч${displayMin}</div>
+                                <div class="sub">${time}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;">
+                            <span class="money" style="color:#00B8D9;">+${money} ₽</span>
+                            <button class="delete-log" onclick="deleteRecord(${r.id})">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }).join('');
+    }
+
+    function deleteRecord(id) {
+        const records = getShiftRecords();
+        const filtered = records.filter(r => r.id !== id);
+        saveShiftRecords(filtered);
+        updateShiftUI();
+        showToast('Запись удалена');
+    }
+
+    // Modals
+    function openBatteryModal() {
+        document.getElementById('batteryModal').classList.add('active');
+        document.getElementById('batteryCount').value = '';
+        document.getElementById('batteryTime').value = '';
+        setTimeout(() => document.getElementById('batteryCount').focus(), 300);
+    }
+
+    function closeBatteryModal() {
+        document.getElementById('batteryModal').classList.remove('active');
+    }
+
+    function openHoursModal() {
+        document.getElementById('hoursModal').classList.add('active');
+        document.getElementById('hoursInput').value = '';
+        document.getElementById('minutesInput').value = '';
+        setTimeout(() => document.getElementById('hoursInput').focus(), 300);
+    }
+
+    function closeHoursModal() {
+        document.getElementById('hoursModal').classList.remove('active');
+    }
+
+    function closeModal(event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.classList.remove('active');
+        }
+    }
+
+    function addBatteryRecord() {
+        const count = parseInt(document.getElementById('batteryCount').value);
+        const timeSpent = parseInt(document.getElementById('batteryTime').value) || 0;
+        
+        if (!count || count < 1) {
+            showToast('Введите количество аккумуляторов', 'error');
+            return;
+        }
+        
+        const records = getShiftRecords();
+        records.push({
+            id: Date.now(),
+            type: 'battery',
+            count: count,
+            timeSpent: timeSpent,
+            dateKey: getShiftDateKey(),
+            timestamp: Date.now()
+        });
+        
+        saveShiftRecords(records);
+        closeBatteryModal();
+        updateShiftUI();
+        showToast(`Добавлено: ${count} аккумулятор${count === 1 ? '' : count < 5 ? 'а' : 'ов'} (+${count * 65} ₽)`, 'success');
+    }
+
+    function addHoursRecord() {
+        const hours = parseInt(document.getElementById('hoursInput').value) || 0;
+        const minutes = parseInt(document.getElementById('minutesInput').value) || 0;
+        
+        if (hours === 0 && minutes === 0) {
+            showToast('Введите время работы', 'error');
+            return;
+        }
+        
+        const records = getShiftRecords();
+        records.push({
+            id: Date.now(),
+            type: 'hours',
+            hours: hours,
+            minutes: minutes,
+            dateKey: getShiftDateKey(),
+            timestamp: Date.now()
+        });
+        
+        saveShiftRecords(records);
+        closeHoursModal();
+        updateShiftUI();
+        
+        const totalH = hours + minutes / 60;
+        const money = Math.round(totalH * 95);
+        showToast(`Добавлено: ${hours}ч ${minutes}м (+${money} ₽)`, 'success');
+    }
+
+    // Stats
+    function setStatsPeriod(period, btn) {
+        currentStatsPeriod = period;
+        document.querySelectorAll('.stats-period-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderStats();
+    }
+
+    function renderStats() {
+        const container = document.getElementById('statsContent');
+        const records = getRecordsForPeriod(currentStatsPeriod);
+        
+        if (records.length === 0) {
+            container.innerHTML = `
+                <div class="stats-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    <div class="empty-title">Нет данных</div>
+                    <div class="empty-desc">За период "${getPeriodLabel()}" записей не найдено</div>
+                </div>
+            `;
+            return;
+        }
+        
+        let totalBatteries = 0;
+        let totalMoney = 0;
+        let totalWorkHours = 0;
+        let totalWorkMinutes = 0;
+        let totalTimeSpent = 0;
+        let batteryEntries = 0;
+        let hoursEntries = 0;
+        
+        records.forEach(r => {
+            if (r.type === 'battery') {
+                totalBatteries += r.count;
+                totalMoney += r.count * 65;
+                if (r.timeSpent) totalTimeSpent += r.timeSpent;
+                batteryEntries++;
+            } else if (r.type === 'hours') {
+                totalWorkHours += r.hours;
+                totalWorkMinutes += r.minutes;
+                const totalH = r.hours + r.minutes / 60;
+                totalMoney += Math.round(totalH * 95);
+                hoursEntries++;
+            }
+        });
+        
+        const batteryMoney = records.filter(r => r.type === 'battery').reduce((s, r) => s + r.count * 65, 0);
+        const hoursMoney = totalMoney - batteryMoney;
+        const totalDisplayH = totalWorkHours + Math.floor(totalWorkMinutes / 60);
+        const totalDisplayM = totalWorkMinutes % 60;
+        
+        container.innerHTML = `
+            <div class="stats-grid">
+                <div class="stats-card">
+                    <div class="icon-wrap green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="10" rx="2"/>
+                            <path d="M22 11v2"/>
+                        </svg>
+                    </div>
+                    <div class="val">${totalBatteries}</div>
+                    <div class="lbl">Аккумуляторов</div>
+                </div>
+                <div class="stats-card">
+                    <div class="icon-wrap blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </div>
+                    <div class="val" style="color:var(--success);">${totalMoney} ₽</div>
+                    <div class="lbl">Заработано</div>
+                </div>
+                <div class="stats-card">
+                    <div class="icon-wrap cyan">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="val">${totalDisplayH}ч ${totalDisplayM}м</div>
+                    <div class="lbl">Отработано</div>
+                </div>
+                <div class="stats-card">
+                    <div class="icon-wrap red">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="val">${totalTimeSpent}м</div>
+                    <div class="lbl">Потрачено времени</div>
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <div class="stats-section-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="7" width="20" height="10" rx="2"/>
+                        <path d="M22 11v2"/>
+                    </svg>
+                    Разбивка по доходу
+                </div>
+                <div class="stats-row">
+                    <span class="label">Аккумуляторы (${totalBatteries} шт)</span>
+                    <span class="value" style="color:var(--primary);">${batteryMoney} ₽</span>
+                </div>
+                <div class="stats-row">
+                    <span class="label">Время работы (${totalDisplayH}ч ${totalDisplayM}м)</span>
+                    <span class="value" style="color:#00B8D9;">${hoursMoney} ₽</span>
+                </div>
+                <div class="stats-row" style="border-top: 2px solid var(--border); padding-top:12px; margin-top:4px;">
+                    <span class="label" style="font-weight:700; color:var(--text);">Итого</span>
+                    <span class="value" style="color:var(--success); font-size:18px;">${totalMoney} ₽</span>
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <div class="stats-section-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    Детализация
+                </div>
+                <div class="stats-row">
+                    <span class="label">Записей аккумуляторов</span>
+                    <span class="value">${batteryEntries}</span>
+                </div>
+                <div class="stats-row">
+                    <span class="label">Записей времени</span>
+                    <span class="value">${hoursEntries}</span>
+                </div>
+                <div class="stats-row">
+                    <span class="label">Среднее за запись (аккумуляторы)</span>
+                    <span class="value">${batteryEntries > 0 ? (totalBatteries / batteryEntries).toFixed(1) + ' шт' : '—'}</span>
+                </div>
+                <div class="stats-row">
+                    <span class="label">Средний доход за смену</span>
+                    <span class="value">${records.length > 0 ? Math.round(totalMoney / Math.max(batteryEntries, 1)) + ' ₽' : '—'}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function getPeriodLabel() {
+        const labels = { today: 'Сегодня', week: 'Неделя', month: 'Месяц', all: 'Всё время' };
+        return labels[currentStatsPeriod] || '';
+    }
+
+    // Address functions (existing)
     const rejectKeywords = [
         '^адрес[:\\s]*$', '^адреса[:\\s]*$', '^адресов[:\\s]*$',
         '^адрес доставки[:\\s]*$', '^доставка[:\\s]*$', '^получатель[:\\s]*$',
@@ -922,15 +1800,11 @@
         if (trimmed.length < 4) return false;
 
         for (const pattern of rejectKeywords) {
-            try {
-                if (new RegExp(pattern, 'i').test(trimmed)) return false;
-            } catch(e) {}
+            try { if (new RegExp(pattern, 'i').test(trimmed)) return false; } catch(e) {}
         }
 
         for (const kw of addressKeywords) {
-            try {
-                if (new RegExp(kw, 'i').test(trimmed)) return true;
-            } catch(e) {}
+            try { if (new RegExp(kw, 'i').test(trimmed)) return true; } catch(e) {}
         }
 
         if (/[уулцпбшнкмдс]\.?\s*\w+/i.test(trimmed)) return true;
@@ -943,124 +1817,58 @@
         yandexMap = new ymaps.Map('map', {
             center: [55.7558, 37.6173],
             zoom: 10
-        }, {
-            suppressMapOpenBlock: true
-        });
-        
+        }, { suppressMapOpenBlock: true });
         mapReady = true;
-        console.log('Yandex Map initialized successfully');
-        
-        // Re-render markers if addresses were added before map was ready
-        if (addresses.length > 0) {
-            updateMarkers();
-        }
+        if (addresses.length > 0) updateMarkers();
     });
 
     function getMarkerPreset(index) {
         const presets = [
-            'islands#blueCircleIcon',
-            'islands#darkBlueCircleIcon',
-            'islands#violetCircleIcon',
-            'islands#pinkCircleIcon',
-            'islands#redCircleIcon',
-            'islands#greenCircleIcon',
-            'islands#orangeCircleIcon',
-            'islands#purpleCircleIcon',
-            'islands#lightBlueCircleIcon',
+            'islands#blueCircleIcon', 'islands#darkBlueCircleIcon', 'islands#violetCircleIcon',
+            'islands#pinkCircleIcon', 'islands#redCircleIcon', 'islands#greenCircleIcon',
+            'islands#orangeCircleIcon', 'islands#purpleCircleIcon', 'islands#lightBlueCircleIcon',
             'islands#yellowCircleIcon'
         ];
         return presets[(index - 1) % presets.length];
     }
 
     function addMarkerToMap(addr, index) {
-        if (!addr.lat || !addr.lng || !yandexMap) {
-            console.warn('Cannot add marker: missing data', addr, index);
-            return;
-        }
-
+        if (!addr.lat || !addr.lng || !yandexMap) return;
         try {
             const marker = new ymaps.Placemark(
                 [addr.lat, addr.lng],
-                {
-                    iconContent: String(index),
-                    balloonContentHeader: 'Адрес #' + index,
-                    balloonContentBody: addr.text,
-                    hintContent: addr.text
-                },
-                {
-                    preset: getMarkerPreset(index)
-                }
+                { iconContent: String(index), balloonContentHeader: 'Адрес #' + index, balloonContentBody: addr.text, hintContent: addr.text },
+                { preset: getMarkerPreset(index) }
             );
-
             yandexMap.geoObjects.add(marker);
             ymapMarkers.push(marker);
-            console.log('Marker added:', index, addr.text);
-        } catch (e) {
-            console.error('Error adding marker:', e);
-        }
+        } catch (e) { console.error('Error adding marker:', e); }
     }
 
     function updateMarkers() {
-        if (!yandexMap) {
-            console.warn('Map not ready yet, waiting...');
-            setTimeout(updateMarkers, 500);
-            return;
-        }
-
-        // Clear all existing markers
+        if (!yandexMap) { setTimeout(updateMarkers, 500); return; }
         yandexMap.geoObjects.removeAll();
         ymapMarkers = [];
-
-        // Add all markers
-        addresses.forEach((addr, i) => {
-            addMarkerToMap(addr, i + 1);
-        });
-
+        addresses.forEach((addr, i) => addMarkerToMap(addr, i + 1));
         document.getElementById('addrCount').textContent = addresses.length;
         updateAddressList();
     }
 
     function fitAllMarkers() {
         if (!yandexMap || ymapMarkers.length === 0) return;
-        
         const bounds = yandexMap.geoObjects.getBounds();
-        if (bounds) {
-            yandexMap.setBounds(bounds, {
-                checkZoomRange: true,
-                zoomMargin: 50
-            });
-        }
+        if (bounds) yandexMap.setBounds(bounds, { checkZoomRange: true, zoomMargin: 50 });
     }
 
-    function mapZoomIn() {
-        if (!yandexMap) return;
-        const currentZoom = yandexMap.getZoom();
-        yandexMap.setZoom(currentZoom + 1, { duration: 200 });
-    }
-
-    function mapZoomOut() {
-        if (!yandexMap) return;
-        const currentZoom = yandexMap.getZoom();
-        yandexMap.setZoom(currentZoom - 1, { duration: 200 });
-    }
+    function mapZoomIn() { if (yandexMap) yandexMap.setZoom(yandexMap.getZoom() + 1, { duration: 200 }); }
+    function mapZoomOut() { if (yandexMap) yandexMap.setZoom(yandexMap.getZoom() - 1, { duration: 200 }); }
 
     function updateAddressList() {
         const container = document.getElementById('addressList');
-
         if (addresses.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                        <circle cx="12" cy="10" r="3"/>
-                    </svg>
-                    <div class="empty-title">Нет адресов</div>
-                    <div class="empty-desc">Загрузите скриншот или введите адреса вручную</div>
-                </div>
-            `;
+            container.innerHTML = `<div class="empty-state"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><div class="empty-title">Нет адресов</div><div class="empty-desc">Загрузите скриншот или введите адреса вручную</div></div>`;
             return;
         }
-
         container.innerHTML = addresses.map((addr, i) => `
             <div class="address-card">
                 <div class="address-marker">${i + 1}</div>
@@ -1069,18 +1877,8 @@
                     <div class="address-coords">${addr.lat.toFixed(4)}, ${addr.lng.toFixed(4)}</div>
                 </div>
                 <div class="address-actions">
-                    <button class="addr-action-btn locate" onclick="locateAddress(${i})">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="3"/>
-                            <path d="M12 2v4m0 12v4m-10-10h4m12 0h4"/>
-                        </svg>
-                    </button>
-                    <button class="addr-action-btn delete" onclick="deleteAddress(${i})">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                    </button>
+                    <button class="addr-action-btn locate" onclick="locateAddress(${i})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m-10-10h4m12 0h4"/></svg></button>
+                    <button class="addr-action-btn delete" onclick="deleteAddress(${i})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                 </div>
             </div>
         `).join('');
@@ -1089,19 +1887,10 @@
     function locateAddress(idx) {
         const addr = addresses[idx];
         if (!addr.lat || !addr.lng || !yandexMap) return;
-
         yandexMap.setCenter([addr.lat, addr.lng], 16, { duration: 300 });
-        
-        if (ymapMarkers[idx]) {
-            setTimeout(() => {
-                ymapMarkers[idx].balloon.open();
-            }, 350);
-        }
-
+        if (ymapMarkers[idx]) setTimeout(() => ymapMarkers[idx].balloon.open(), 350);
         const mapSection = document.getElementById('mapSection');
-        if (!mapSection.classList.contains('expanded')) {
-            mapSection.classList.add('expanded');
-        }
+        if (!mapSection.classList.contains('expanded')) mapSection.classList.add('expanded');
     }
 
     function deleteAddress(idx) {
@@ -1113,21 +1902,19 @@
     function switchTab(tab) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
         const btns = document.querySelectorAll('.tab-btn');
-        const idxMap = { 'scan': 0, 'manual': 1, 'list': 2 };
+        const idxMap = { 'scan': 0, 'manual': 1, 'list': 2, 'shift': 3, 'stats': 4 };
         btns[idxMap[tab]].classList.add('active');
         document.getElementById('tab-' + tab).classList.add('active');
 
-        if (tab === 'list' && yandexMap) {
-            setTimeout(() => yandexMap.container.fitToViewport(), 100);
-        }
+        if (tab === 'shift') updateShiftUI();
+        if (tab === 'stats') renderStats();
+        if (tab === 'list' && yandexMap) setTimeout(() => yandexMap.container.fitToViewport(), 100);
     }
 
     function handleImageUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = function(e) {
             document.getElementById('uploadPreview').src = e.target.result;
@@ -1151,7 +1938,6 @@
         const progressEl = document.getElementById('ocrProgress');
         const fillEl = document.getElementById('progressFill');
         const textEl = document.getElementById('progressText');
-
         progressEl.classList.add('visible');
 
         try {
@@ -1165,19 +1951,14 @@
                         const pct = Math.round(m.progress * 100);
                         fillEl.style.width = pct + '%';
                         textEl.textContent = `Загрузка языковой модели... ${pct}%`;
-                    } else {
-                        textEl.textContent = m.status || 'Обработка...';
-                    }
+                    } else { textEl.textContent = m.status || 'Обработка...'; }
                 }
             });
-
             textEl.textContent = 'Готово!';
             fillEl.style.width = '100%';
             processExtractedText(result.data.text);
-
             setTimeout(() => { progressEl.classList.remove('visible'); }, 1500);
         } catch (err) {
-            console.error('OCR Error:', err);
             textEl.textContent = 'Ошибка распознавания';
             fillEl.style.width = '0%';
             showToast('Ошибка распознавания текста', 'error');
@@ -1187,17 +1968,11 @@
     function processExtractedText(text) {
         const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         extractedItems = [];
-
         lines.forEach((line, i) => {
             if (extractedItems.some(item => item.text.toLowerCase() === line.toLowerCase())) return;
-            const isAddress = isLikelyAddress(line);
-            extractedItems.push({ text: line, isAddress, id: i });
+            extractedItems.push({ text: line, isAddress: isLikelyAddress(line), id: i });
         });
-
-        extractedItems.forEach(item => {
-            if (item.isAddress) selectedExtracted.add(item.id);
-        });
-
+        extractedItems.forEach(item => { if (item.isAddress) selectedExtracted.add(item.id); });
         renderExtractedList();
         document.getElementById('extractedSection').classList.add('visible');
     }
@@ -1207,22 +1982,13 @@
         container.innerHTML = extractedItems.map(item => {
             const isSelected = selectedExtracted.has(item.id);
             const isRejected = !item.isAddress && !isSelected;
-            return `
-                <div class="extracted-item ${isSelected ? 'selected' : ''}" onclick="toggleExtracted(${item.id})">
-                    <div class="item-check"></div>
-                    <div class="item-text">${item.text}</div>
-                    ${isRejected ? '<span class="item-reject">пропущен</span>' : ''}
-                </div>
-            `;
+            return `<div class="extracted-item ${isSelected ? 'selected' : ''}" onclick="toggleExtracted(${item.id})"><div class="item-check"></div><div class="item-text">${item.text}</div>${isRejected ? '<span class="item-reject">пропущен</span>' : ''}</div>`;
         }).join('');
     }
 
     function toggleExtracted(id) {
-        if (selectedExtracted.has(id)) {
-            selectedExtracted.delete(id);
-        } else {
-            selectedExtracted.add(id);
-        }
+        if (selectedExtracted.has(id)) selectedExtracted.delete(id);
+        else selectedExtracted.add(id);
         renderExtractedList();
     }
 
@@ -1235,14 +2001,10 @@
 
     function cleanAddressForSearch(rawAddress) {
         let addr = rawAddress.trim();
-        
-        // Replace common OCR errors
         addr = addr.replace(/[|ІІ]/g, 'l');
         addr = addr.replace(/\s+/g, ' ').trim();
         addr = addr.replace(/^[\s\-\*\.\#\>\|]*/, '');
         addr = addr.replace(/[\s\-\*\.\#\>\|]*$/, '');
-        
-        // Normalize address abbreviations
         addr = addr.replace(/ул\s/gi, 'ул. ');
         addr = addr.replace(/пр\s/gi, 'пр. ');
         addr = addr.replace(/пер\s/gi, 'пер. ');
@@ -1251,18 +2013,13 @@
         addr = addr.replace(/кв\s/gi, 'кв. ');
         addr = addr.replace(/корп\s/gi, 'корп. ');
         addr = addr.replace(/стр\s/gi, 'стр. ');
-        
         return addr;
     }
 
     async function geocodeSelected() {
         const btn = document.getElementById('geocodeBtn');
         const selectedItems = extractedItems.filter(item => selectedExtracted.has(item.id));
-
-        if (selectedItems.length === 0) {
-            showToast('Выберите хотя бы один адрес', 'error');
-            return;
-        }
+        if (selectedItems.length === 0) { showToast('Выберите хотя бы один адрес', 'error'); return; }
 
         btn.disabled = true;
         btn.innerHTML = '<span class="geocoding-spinner"></span> Поиск адресов в Москве...';
@@ -1273,16 +2030,9 @@
         for (const item of selectedItems) {
             try {
                 const coords = await geocodeAddress(item.text);
-                if (coords) {
-                    addresses.push({ text: item.text, lat: coords.lat, lng: coords.lng });
-                    geocoded++;
-                } else {
-                    failed++;
-                }
-            } catch (e) {
-                console.error('Geocode error for:', item.text, e);
-                failed++;
-            }
+                if (coords) { addresses.push({ text: item.text, lat: coords.lat, lng: coords.lng }); geocoded++; }
+                else failed++;
+            } catch (e) { failed++; }
             await sleep(1200);
         }
 
@@ -1291,16 +2041,12 @@
 
         if (geocoded > 0) {
             updateMarkers();
-            if (addresses.length === geocoded) {
-                setTimeout(() => fitAllMarkers(), 300);
-            }
-
+            if (addresses.length === geocoded) setTimeout(() => fitAllMarkers(), 300);
             const btns = document.querySelectorAll('.tab-btn');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             btns[2].classList.add('active');
             document.getElementById('tab-list').classList.add('active');
-
             showToast(`Найдено: ${geocoded} адресов` + (failed > 0 ? `, не найдено: ${failed}` : ''), failed > 0 ? '' : 'success');
         } else {
             showToast('Ни один адрес не удалось найти в Москве', 'error');
@@ -1309,144 +2055,81 @@
 
     async function geocodeAddress(rawAddress) {
         const cleaned = cleanAddressForSearch(rawAddress);
-        
-        const queries = [];
-        
-        // Multiple query variations for better matching
-        queries.push(`Москва, ${cleaned}`);
-        queries.push(cleaned);
-        queries.push(`Москва ${cleaned}`);
-        queries.push(`г. Москва, ${cleaned}`);
-        
-        // Extract street part if possible
+        const queries = [`Москва, ${cleaned}`, cleaned, `Москва ${cleaned}`, `г. Москва, ${cleaned}`];
         const streetMatch = cleaned.match(/(?:ул|пр|пер|бул|ш|наб|пл|пр-т|пр-кт)\.?\s+[^,\n]+/i);
-        if (streetMatch) {
-            queries.push(`Москва, ${streetMatch[0]}`);
-        }
-        
+        if (streetMatch) queries.push(`Москва, ${streetMatch[0]}`);
+
         for (const query of queries) {
             try {
-                const result = await ymaps.geocode(query, {
-                    results: 3,
-                    boundedBy: [[55.14, 36.89], [56.02, 37.96]],
-                    strictBounds: false
-                });
-                
+                const result = await ymaps.geocode(query, { results: 3, boundedBy: [[55.14, 36.89], [56.02, 37.96]], strictBounds: false });
                 const firstResult = result.geoObjects.get(0);
                 if (firstResult) {
                     const coords = firstResult.geometry.getCoordinates();
-                    const lat = coords[0];
-                    const lng = coords[1];
-                    
-                    // Verify within Moscow bounds
-                    if (lat >= 55.3 && lat <= 56.1 && lng >= 37.0 && lng <= 38.1) {
-                        console.log('Found address:', query, '->', lat, lng);
-                        return { lat, lng };
-                    }
+                    const lat = coords[0], lng = coords[1];
+                    if (lat >= 55.3 && lat <= 56.1 && lng >= 37.0 && lng <= 38.1) return { lat, lng };
                 }
-            } catch (e) {
-                console.warn('Yandex geocode failed for:', query, e);
-            }
-            
+            } catch (e) {}
             await sleep(500);
         }
-        
-        console.log('No result found for:', rawAddress);
         return null;
     }
 
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
     async function addManualAddress() {
         const input = document.getElementById('manualInput');
         const text = input.value.trim();
-
-        if (!text) {
-            showToast('Введите адрес', 'error');
-            return;
-        }
-
+        if (!text) { showToast('Введите адрес', 'error'); return; }
         input.value = '';
         showToast('Поиск адреса в Москве...');
-
         const coords = await geocodeAddress(text);
-
         if (coords) {
             addresses.push({ text, lat: coords.lat, lng: coords.lng });
             updateMarkers();
             setTimeout(() => fitAllMarkers(), 300);
             showToast('Адрес добавлен ✓', 'success');
-        } else {
-            showToast('Адрес не найден в Москве', 'error');
-        }
+        } else { showToast('Адрес не найден в Москве', 'error'); }
     }
 
     async function addBulkAddresses() {
         const textarea = document.getElementById('bulkInput');
         const text = textarea.value.trim();
-
-        if (!text) {
-            showToast('Введите адреса', 'error');
-            return;
-        }
-
+        if (!text) { showToast('Введите адреса', 'error'); return; }
         const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
-
-        if (lines.length === 0) {
-            showToast('Нет адресов для добавления', 'error');
-            return;
-        }
-
+        if (lines.length === 0) { showToast('Нет адресов для добавления', 'error'); return; }
         showToast(`Поиск ${lines.length} адресов в Москве...`);
-
-        let geocoded = 0;
-        let failed = 0;
-
+        let geocoded = 0, failed = 0;
         for (const line of lines) {
             const coords = await geocodeAddress(line);
-            if (coords) {
-                addresses.push({ text: line, lat: coords.lat, lng: coords.lng });
-                geocoded++;
-            } else {
-                failed++;
-            }
+            if (coords) { addresses.push({ text: line, lat: coords.lat, lng: coords.lng }); geocoded++; }
+            else failed++;
             await sleep(1200);
         }
-
         updateMarkers();
         if (geocoded > 0) setTimeout(() => fitAllMarkers(), 300);
         textarea.value = '';
-
-        showToast(
-            `Добавлено: ${geocoded}` + (failed > 0 ? `, не найдено: ${failed}` : ''),
-            failed === 0 ? 'success' : ''
-        );
+        showToast(`Добавлено: ${geocoded}` + (failed > 0 ? `, не найдено: ${failed}` : ''), failed === 0 ? 'success' : '');
     }
 
     function toggleMap() {
         const section = document.getElementById('mapSection');
         section.classList.toggle('expanded');
-        setTimeout(() => {
-            if (yandexMap) yandexMap.container.fitToViewport();
-        }, 450);
+        setTimeout(() => { if (yandexMap) yandexMap.container.fitToViewport(); }, 450);
     }
 
     function showToast(message, type = '') {
         const toast = document.getElementById('toast');
         toast.textContent = message;
         toast.className = 'toast visible' + (type ? ' ' + type : '');
-
         clearTimeout(window._toastTimeout);
-        window._toastTimeout = setTimeout(() => {
-            toast.classList.remove('visible');
-        }, 3000);
+        window._toastTimeout = setTimeout(() => { toast.classList.remove('visible'); }, 3000);
     }
 
-    // Initialize
+    // Init
     window.addEventListener('DOMContentLoaded', () => {
-        console.log('Page loaded, waiting for Yandex Maps API...');
+        updateShiftUI();
+        // Update shift badge every minute
+        setInterval(updateShiftUI, 60000);
     });
 </script>
 
