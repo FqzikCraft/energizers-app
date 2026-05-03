@@ -1289,6 +1289,8 @@
     let extractedItems = [];
     let yandexMap = null;
     let mapReady = false;
+    let userLocation = null;
+    let routePolyline = null;
     let selectedExtracted = new Set();
     let currentStatsPeriod = 'today';
 
@@ -1819,7 +1821,25 @@
             zoom: 10
         }, { suppressMapOpenBlock: true });
         mapReady = true;
-        if (addresses.length > 0) updateMarkers();
+        
+        // Получаем текущую геолокацию пользователя
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    userLocation = [position.coords.latitude, position.coords.longitude];
+                    addUserLocationMarker();
+                    // Центрируем карту на пользователе
+                    yandexMap.setCenter(userLocation, 12);
+                    updateRouteAndMarkers();
+                },
+                function(error) {
+                    console.log('Геолокация недоступна:', error);
+                },
+                { enableHighAccuracy: true, timeout: 5000 }
+            );
+        }
+        
+        if (addresses.length > 0) updateRouteAndMarkers();
     });
 
     function getMarkerPreset(index) {
@@ -1830,6 +1850,70 @@
             'islands#yellowCircleIcon'
         ];
         return presets[(index - 1) % presets.length];
+    }
+
+    function addUserLocationMarker() {
+        if (!userLocation || !yandexMap) return;
+        try {
+            const userMarker = new ymaps.Placemark(
+                userLocation,
+                { balloonContentHeader: 'Ваше местоположение' },
+                { preset: 'islands#redDotIcon', iconColor: '#ff0000' }
+            );
+            yandexMap.geoObjects.add(userMarker);
+        } catch (e) { console.error('Error adding user location marker:', e); }
+    }
+
+    function updateRouteAndMarkers() {
+        if (!yandexMap) { setTimeout(updateRouteAndMarkers, 500); return; }
+        yandexMap.geoObjects.removeAll();
+        ymapMarkers = [];
+        
+        // Добавляем маркер пользователя
+        addUserLocationMarker();
+        
+        // Добавляем маркеры адресов
+        addresses.forEach((addr, i) => addMarkerToMap(addr, i + 1));
+        
+        // Строим маршрут от пользователя к адресам
+        buildRoute();
+        
+        document.getElementById('addrCount').textContent = addresses.length;
+        updateAddressList();
+    }
+
+    function buildRoute() {
+        if (!userLocation || addresses.length === 0) return;
+        
+        // Собираем все точки: пользователь -> адрес 1 -> адрес 2 -> ... -> последний адрес
+        const routePoints = [userLocation, ...addresses.map(addr => [addr.lat, addr.lng])];
+        
+        // Создаём полилинию маршрута
+        if (routePolyline) {
+            yandexMap.geoObjects.remove(routePolyline);
+        }
+        
+        routePolyline = new ymaps.Polyline(
+            routePoints,
+            { hintContent: 'Маршрут от вашего местоположения по всем адресам' },
+            { 
+                strokeColor: '#3C63F2', 
+                strokeWidth: 4, 
+                strokeOpacity: 0.8,
+                strokeStyle: 'dash'
+            }
+        );
+        
+        yandexMap.geoObjects.add(routePolyline);
+    }
+
+    function updateMarkers() {
+        if (!yandexMap) { setTimeout(updateMarkers, 500); return; }
+        yandexMap.geoObjects.removeAll();
+        ymapMarkers = [];
+        addresses.forEach((addr, i) => addMarkerToMap(addr, i + 1));
+        document.getElementById('addrCount').textContent = addresses.length;
+        updateAddressList();
     }
 
     function addMarkerToMap(addr, index) {
@@ -1845,19 +1929,31 @@
         } catch (e) { console.error('Error adding marker:', e); }
     }
 
-    function updateMarkers() {
-        if (!yandexMap) { setTimeout(updateMarkers, 500); return; }
-        yandexMap.geoObjects.removeAll();
-        ymapMarkers = [];
-        addresses.forEach((addr, i) => addMarkerToMap(addr, i + 1));
-        document.getElementById('addrCount').textContent = addresses.length;
-        updateAddressList();
-    }
-
     function fitAllMarkers() {
-        if (!yandexMap || ymapMarkers.length === 0) return;
-        const bounds = yandexMap.geoObjects.getBounds();
-        if (bounds) yandexMap.setBounds(bounds, { checkZoomRange: true, zoomMargin: 50 });
+        if (!yandexMap) return;
+        const allPoints = [];
+        
+        // Добавляем позицию пользователя
+        if (userLocation) {
+            allPoints.push(userLocation);
+        }
+        
+        // Добавляем все адреса
+        addresses.forEach(addr => {
+            if (addr.lat && addr.lng) {
+                allPoints.push([addr.lat, addr.lng]);
+            }
+        });
+        
+        if (allPoints.length === 0) return;
+        
+        // Вычисляем границы всех точек
+        const bounds = [
+            [Math.min(...allPoints.map(p => p[0])), Math.min(...allPoints.map(p => p[1]))],
+            [Math.max(...allPoints.map(p => p[0])), Math.max(...allPoints.map(p => p[1]))]
+        ];
+        
+        yandexMap.setBounds(bounds, { checkZoomRange: true, zoomMargin: 50 });
     }
 
     function mapZoomIn() { if (yandexMap) yandexMap.setZoom(yandexMap.getZoom() + 1, { duration: 200 }); }
@@ -1895,7 +1991,7 @@
 
     function deleteAddress(idx) {
         addresses.splice(idx, 1);
-        updateMarkers();
+        updateRouteAndMarkers();
         showToast('Адрес удалён');
     }
 
@@ -2040,7 +2136,7 @@
         btn.innerHTML = 'Построить на карте';
 
         if (geocoded > 0) {
-            updateMarkers();
+            updateRouteAndMarkers();
             if (addresses.length === geocoded) setTimeout(() => fitAllMarkers(), 300);
             const btns = document.querySelectorAll('.tab-btn');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -2085,7 +2181,7 @@
         const coords = await geocodeAddress(text);
         if (coords) {
             addresses.push({ text, lat: coords.lat, lng: coords.lng });
-            updateMarkers();
+            updateRouteAndMarkers();
             setTimeout(() => fitAllMarkers(), 300);
             showToast('Адрес добавлен ✓', 'success');
         } else { showToast('Адрес не найден в Москве', 'error'); }
@@ -2105,7 +2201,7 @@
             else failed++;
             await sleep(1200);
         }
-        updateMarkers();
+        updateRouteAndMarkers();
         if (geocoded > 0) setTimeout(() => fitAllMarkers(), 300);
         textarea.value = '';
         showToast(`Добавлено: ${geocoded}` + (failed > 0 ? `, не найдено: ${failed}` : ''), failed === 0 ? 'success' : '');
