@@ -1819,7 +1819,10 @@
         yandexMap = new ymaps.Map('map', {
             center: [55.7558, 37.6173],
             zoom: 10
-        }, { suppressMapOpenBlock: true });
+        }, { 
+            suppressMapOpenBlock: true,
+            searchControlProvider: 'yandex#search'
+        });
         mapReady = true;
         
         // Получаем текущую геолокацию пользователя
@@ -1834,8 +1837,9 @@
                 },
                 function(error) {
                     console.log('Геолокация недоступна:', error);
+                    showToast('Геолокация недоступна. Проверьте разрешения браузера.');
                 },
-                { enableHighAccuracy: true, timeout: 5000 }
+                { enableHighAccuracy: true, timeout: 10000 }
             );
         }
         
@@ -1855,16 +1859,49 @@
     function addUserLocationMarker() {
         if (!userLocation || !yandexMap) return;
         try {
+            // Создаём кастомный маркер в виде стрелки навигатора (как в Яндекс.Навигаторе)
+            const userMarkerHtml = `
+                <div style="
+                    width: 0;
+                    height: 0;
+                    border-left: 12px solid transparent;
+                    border-right: 12px solid transparent;
+                    border-bottom: 24px solid #3C63F2;
+                    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+                    transform-origin: center bottom;
+                "></div>
+            `;
+            
             const userMarker = new ymaps.Placemark(
                 userLocation,
                 { balloonContentHeader: 'Ваше местоположение' },
-                { preset: 'islands#redDotIcon', iconColor: '#ff0000' }
+                { 
+                    iconLayout: ymaps.layout.template.default.UserContent,
+                    iconContent: userMarkerHtml,
+                    iconShape: {
+                        type: 'Circle',
+                        coordinates: [0, 0],
+                        radius: 20
+                    }
+                }
             );
             yandexMap.geoObjects.add(userMarker);
-        } catch (e) { console.error('Error adding user location marker:', e); }
+        } catch (e) { 
+            // Если кастомный макет не работает, используем стандартный красный маркер
+            try {
+                const fallbackMarker = new ymaps.Placemark(
+                    userLocation,
+                    { balloonContentHeader: 'Ваше местоположение' },
+                    { preset: 'islands#blueDotIcon' }
+                );
+                yandexMap.geoObjects.add(fallbackMarker);
+            } catch (e2) {
+                console.error('Error adding user location marker:', e2); 
+            }
+        }
     }
 
-    function updateRouteAndMarkers() {
+    async function updateRouteAndMarkers() {
         if (!yandexMap) { setTimeout(updateRouteAndMarkers, 500); return; }
         yandexMap.geoObjects.removeAll();
         ymapMarkers = [];
@@ -1876,26 +1913,75 @@
         addresses.forEach((addr, i) => addMarkerToMap(addr, i + 1));
         
         // Строим маршрут от пользователя к адресам
-        buildRoute();
+        await buildRoute();
         
         document.getElementById('addrCount').textContent = addresses.length;
         updateAddressList();
     }
 
-    function buildRoute() {
+    async function buildRoute() {
         if (!userLocation || addresses.length === 0) return;
         
         // Собираем все точки: пользователь -> адрес 1 -> адрес 2 -> ... -> последний адрес
         const routePoints = [userLocation, ...addresses.map(addr => [addr.lat, addr.lng])];
         
-        // Создаём полилинию маршрута
+        // Удаляем старый маршрут (полилинию)
+        if (routePolyline) {
+            yandexMap.geoObjects.remove(routePolyline);
+            routePolyline = null;
+        }
+        
+        // Используем API маршрутизации для построения маршрута по дорогам
+        try {
+            // Создаём мультимаршрут через все точки
+            const multiRoute = await ymaps.multiRouter.createRoute({
+                referencePoints: routePoints,
+                routingMode: 'auto' // автомобильный маршрут
+            }, {
+                autoFitToViewport: false,
+                suppressDefaultRoutingPanel: true
+            });
+            
+            // Получаем первый сегмент маршрута и добавляем его на карту
+            const routes = multiRoute.getRoutes();
+            if (routes.getLength() > 0) {
+                const route = routes.get(0);
+                
+                // Получаем координаты пути
+                const paths = route.getPaths();
+                paths.each(function(path) {
+                    const coordinates = path.geometry.getCoordinates();
+                    
+                    // Создаём полилинию с координатами маршрута
+                    routePolyline = new ymaps.Polyline(
+                        coordinates,
+                        { hintContent: 'Маршрут от вашего местоположения по всем адресам' },
+                        { 
+                            strokeColor: '#3C63F2', 
+                            strokeWidth: 5, 
+                            strokeOpacity: 0.9,
+                            strokeStyle: 'solid'
+                        }
+                    );
+                    yandexMap.geoObjects.add(routePolyline);
+                });
+            }
+        } catch (error) {
+            console.log('Ошибка построения маршрута по дорогам:', error);
+            // Если API маршрутизации недоступно, рисуем прямую линию
+            drawSimplePolyline(routePoints);
+        }
+    }
+    
+    // Функция для рисования простой полилинии (резервный вариант)
+    function drawSimplePolyline(points) {
         if (routePolyline) {
             yandexMap.geoObjects.remove(routePolyline);
         }
         
         routePolyline = new ymaps.Polyline(
-            routePoints,
-            { hintContent: 'Маршрут от вашего местоположения по всем адресам' },
+            points,
+            { hintContent: 'Маршрут (прямая линия)' },
             { 
                 strokeColor: '#3C63F2', 
                 strokeWidth: 4, 
