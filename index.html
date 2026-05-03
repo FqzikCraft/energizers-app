@@ -2198,27 +2198,32 @@
         const cleaned = cleanAddressForSearch(rawAddress);
         const query = `Москва, ${cleaned}`;
         
-        try {
-            // Используем геокодер 2ГИС через их API
-            const response = await fetch(`https://catalog.api.2gis.com/3.0/items/geocoder?key=547674c5-99e3-40b6-8039-ee711071640c&q=${encodeURIComponent(query)}&fields=items.point`);
-            const data = await response.json();
+        return new Promise((resolve) => {
+            if (!DG || !DG.Geocoder) {
+                console.log('API 2ГИС ещё не загрузилось');
+                resolve(null);
+                return;
+            }
             
-            if (data.result && data.result.items && data.result.items.length > 0) {
-                const item = data.result.items[0];
-                if (item.point) {
-                    const lng = item.point.lon;
-                    const lat = item.point.lat;
+            DG.Geocoder.search(query, function (result) {
+                if (result && result.length > 0) {
+                    const item = result[0];
+                    const latlng = item.getLatLng();
+                    const lat = latlng.lat;
+                    const lng = latlng.lng;
+                    
                     // Проверка что координаты в Москве
                     if (lat >= 55.3 && lat <= 56.1 && lng >= 37.0 && lng <= 38.1) {
-                        return { lat, lng };
+                        resolve({ lat, lng });
+                        return;
                     }
                 }
-            }
-        } catch (e) {
-            console.log('Ошибка геокодирования 2ГИС:', e);
-        }
-        
-        return null;
+                resolve(null);
+            }, function (error) {
+                console.log('Ошибка геокодирования 2ГИС:', error);
+                resolve(null);
+            });
+        });
     }
 
     function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
