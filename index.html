@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Энерджайзеры</title>
-    <script src="https://api-maps.yandex.ru/2.1/?apikey=b023f04e-d96f-41d0-a2b6-2ac6e6c17a5a&lang=ru_RU"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         @import url('https://fontsource.roboto/files/roboto-cyrillic-400-normal.woff2');
@@ -1815,7 +1815,12 @@
         return false;
     }
 
+    // API ключи Яндекс.Карт (разные для разных сервисов)
+    const GEOCODER_API_KEY = '5f172465-f0ab-4e87-a9ad-b2d003f2e95b'; // Для геокодирования
+    const ROUTING_API_KEY = 'b023f04e-d96f-41d0-a2b6-2ac6e6c17a5a'; // Для маршрутизации
+    
     ymaps.ready(function() {
+        // Инициализация карты с ключом для геокодирования
         yandexMap = new ymaps.Map('map', {
             center: [55.7558, 37.6173],
             zoom: 10
@@ -1940,7 +1945,8 @@
             ymaps.route(routePoints, {
                 mapStateAutoApply: false,
                 routingMode: 'auto', // автомобильный маршрут
-                avoidTraffic: false  // учитывать пробки
+                avoidTraffic: false,  // учитывать пробки
+                apikey: ROUTING_API_KEY  // Ключ для маршрутизации
             }).then(function(activeRoute) {
                 // Получаем координаты маршрута
                 const paths = activeRoute.getPaths();
@@ -2247,14 +2253,21 @@
 
         for (const query of queries) {
             try {
-                const result = await ymaps.geocode(query, { results: 3, boundedBy: [[55.14, 36.89], [56.02, 37.96]], strictBounds: false });
+                const result = await ymaps.geocode(query, { 
+                    results: 3, 
+                    boundedBy: [[55.14, 36.89], [56.02, 37.96]], 
+                    strictBounds: false,
+                    apikey: GEOCODER_API_KEY
+                });
                 const firstResult = result.geoObjects.get(0);
                 if (firstResult) {
                     const coords = firstResult.geometry.getCoordinates();
                     const lat = coords[0], lng = coords[1];
                     if (lat >= 55.3 && lat <= 56.1 && lng >= 37.0 && lng <= 38.1) return { lat, lng };
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.log('Ошибка геокодирования:', e);
+            }
             await sleep(500);
         }
         return null;
