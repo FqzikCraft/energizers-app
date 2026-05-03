@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Энерджайзеры</title>
-    <script src="https://api-maps.yandex.ru/2.1/?apikey=25c3cc9b-776d-4fac-a6c1-753874b63e20&lang=ru_RU"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=b023f04e-d96f-41d0-a2b6-2ac6e6c17a5a&lang=ru_RU"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         @import url('https://fontsource.roboto/files/roboto-cyrillic-400-normal.woff2');
@@ -1859,15 +1859,15 @@
     function addUserLocationMarker() {
         if (!userLocation || !yandexMap) return;
         try {
-            // Создаём кастомный маркер в виде стрелки навигатора (как в Яндекс.Навигаторе)
+            // Создаём кастомный маркер в виде синей стрелки навигатора (как в Яндекс.Навигаторе)
             const userMarkerHtml = `
                 <div style="
                     width: 0;
                     height: 0;
-                    border-left: 12px solid transparent;
-                    border-right: 12px solid transparent;
-                    border-bottom: 24px solid #3C63F2;
-                    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+                    border-left: 16px solid transparent;
+                    border-right: 16px solid transparent;
+                    border-bottom: 32px solid #3C63F2;
+                    filter: drop-shadow(0 3px 6px rgba(60,99,242,0.6));
                     transform-origin: center bottom;
                 "></div>
             `;
@@ -1881,13 +1881,13 @@
                     iconShape: {
                         type: 'Circle',
                         coordinates: [0, 0],
-                        radius: 20
+                        radius: 25
                     }
                 }
             );
             yandexMap.geoObjects.add(userMarker);
         } catch (e) { 
-            // Если кастомный макет не работает, используем стандартный красный маркер
+            // Если кастомный макет не работает, используем стандартный синий маркер
             try {
                 const fallbackMarker = new ymaps.Placemark(
                     userLocation,
@@ -1931,43 +1931,47 @@
             routePolyline = null;
         }
         
+        // Если нет адресов, выходим
+        if (addresses.length === 0) return;
+        
         // Используем API маршрутизации для построения маршрута по дорогам
         try {
-            // Создаём мультимаршрут через все точки
-            const multiRoute = await ymaps.multiRouter.createRoute({
-                referencePoints: routePoints,
-                routingMode: 'auto' // автомобильный маршрут
-            }, {
-                autoFitToViewport: false,
-                suppressDefaultRoutingPanel: true
-            });
-            
-            // Получаем первый сегмент маршрута и добавляем его на карту
-            const routes = multiRoute.getRoutes();
-            if (routes.getLength() > 0) {
-                const route = routes.get(0);
-                
-                // Получаем координаты пути
-                const paths = route.getPaths();
+            // Для Яндекс.Карт 2.1 используем ymaps.route для построения маршрута
+            ymaps.route(routePoints, {
+                mapStateAutoApply: false,
+                routingMode: 'auto', // автомобильный маршрут
+                avoidTraffic: false  // учитывать пробки
+            }).then(function(activeRoute) {
+                // Получаем координаты маршрута
+                const paths = activeRoute.getPaths();
                 paths.each(function(path) {
                     const coordinates = path.geometry.getCoordinates();
                     
-                    // Создаём полилинию с координатами маршрута
+                    // Создаём полилинию с координатами маршрута (стиль как в Яндекс.Навигаторе)
                     routePolyline = new ymaps.Polyline(
                         coordinates,
                         { hintContent: 'Маршрут от вашего местоположения по всем адресам' },
                         { 
                             strokeColor: '#3C63F2', 
-                            strokeWidth: 5, 
-                            strokeOpacity: 0.9,
+                            strokeWidth: 6, 
+                            strokeOpacity: 1.0,
                             strokeStyle: 'solid'
                         }
                     );
                     yandexMap.geoObjects.add(routePolyline);
                 });
-            }
+                
+                // Масштабируем карту чтобы показать весь маршрут
+                yandexMap.setBounds(activeRoute.getBounds(), { checkZoomRange: true });
+            }).catch(function(error) {
+                console.log('Ошибка построения маршрута по дорогам:', error);
+                // Если API маршрутизации недоступно, рисуем прямую линию
+                drawSimplePolyline(routePoints);
+                showToast('Маршрут по дорогам недоступен. Проверьте ключ API.');
+            });
+            
         } catch (error) {
-            console.log('Ошибка построения маршрута по дорогам:', error);
+            console.log('Ошибка построения маршрута:', error);
             // Если API маршрутизации недоступно, рисуем прямую линию
             drawSimplePolyline(routePoints);
         }
