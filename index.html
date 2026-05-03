@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Энерджайзеры</title>
-    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+    <script src="https://maps.api.2gis.ru/2.0/loader.js?pkg=full&key=547674c5-99e3-40b6-8039-ee711071640c"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         @import url('https://fontsource.roboto/files/roboto-cyrillic-400-normal.woff2');
@@ -1815,18 +1815,13 @@
         return false;
     }
 
-    // API ключи Яндекс.Карт (разные для разных сервисов)
-    const GEOCODER_API_KEY = '5f172465-f0ab-4e87-a9ad-b2d003f2e95b'; // Для геокодирования
-    const ROUTING_API_KEY = 'b023f04e-d96f-41d0-a2b6-2ac6e6c17a5a'; // Для маршрутизации
+    // API ключ 2ГИС уже подключён в loader.js
     
-    ymaps.ready(function() {
-        // Инициализация карты с ключом для геокодирования
-        yandexMap = new ymaps.Map('map', {
+    DG.then(function() {
+        // Инициализация карты
+        yandexMap = DG.map('map', {
             center: [55.7558, 37.6173],
             zoom: 10
-        }, { 
-            suppressMapOpenBlock: true,
-            searchControlProvider: 'yandex#search'
         });
         mapReady = true;
         
@@ -1851,20 +1846,15 @@
         if (addresses.length > 0) updateRouteAndMarkers();
     });
 
-    function getMarkerPreset(index) {
-        const presets = [
-            'islands#blueCircleIcon', 'islands#darkBlueCircleIcon', 'islands#violetCircleIcon',
-            'islands#pinkCircleIcon', 'islands#redCircleIcon', 'islands#greenCircleIcon',
-            'islands#orangeCircleIcon', 'islands#purpleCircleIcon', 'islands#lightBlueCircleIcon',
-            'islands#yellowCircleIcon'
-        ];
-        return presets[(index - 1) % presets.length];
+    function getMarkerColor(index) {
+        const colors = ['#3C63F2', '#2B4CC2', '#8B5CF6', '#EC4899', '#FC3F1D', '#4CAF50', '#F59E0B', '#9333EA', '#06B6D4', '#EAB308'];
+        return colors[(index - 1) % colors.length];
     }
 
     function addUserLocationMarker() {
         if (!userLocation || !yandexMap) return;
         try {
-            // Создаём кастомный маркер в виде синей стрелки навигатора (как в Яндекс.Навигаторе)
+            // Создаём кастомный маркер пользователя для 2ГИС
             const userMarkerHtml = `
                 <div style="
                     width: 0;
@@ -1877,39 +1867,29 @@
                 "></div>
             `;
             
-            const userMarker = new ymaps.Placemark(
-                userLocation,
-                { balloonContentHeader: 'Ваше местоположение' },
-                { 
-                    iconLayout: ymaps.layout.template.default.UserContent,
-                    iconContent: userMarkerHtml,
-                    iconShape: {
-                        type: 'Circle',
-                        coordinates: [0, 0],
-                        radius: 25
-                    }
-                }
-            );
-            yandexMap.geoObjects.add(userMarker);
+            const userMarker = DG.marker(userLocation, {
+                icon: DG.divIcon({
+                    html: userMarkerHtml,
+                    className: 'user-location-marker',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 32]
+                })
+            }).addTo(yandexMap);
+            userMarker.bindPopup('Ваше местоположение');
         } catch (e) { 
-            // Если кастомный макет не работает, используем стандартный синий маркер
-            try {
-                const fallbackMarker = new ymaps.Placemark(
-                    userLocation,
-                    { balloonContentHeader: 'Ваше местоположение' },
-                    { preset: 'islands#blueDotIcon' }
-                );
-                yandexMap.geoObjects.add(fallbackMarker);
-            } catch (e2) {
-                console.error('Error adding user location marker:', e2); 
-            }
+            console.error('Error adding user location marker:', e); 
         }
     }
 
     async function updateRouteAndMarkers() {
         if (!yandexMap) { setTimeout(updateRouteAndMarkers, 500); return; }
-        yandexMap.geoObjects.removeAll();
+        // Очищаем все маркеры и полилинии
+        ymapMarkers.forEach(marker => yandexMap.removeLayer(marker));
         ymapMarkers = [];
+        if (routePolyline) {
+            yandexMap.removeLayer(routePolyline);
+            routePolyline = null;
+        }
         
         // Добавляем маркер пользователя
         addUserLocationMarker();
@@ -1930,82 +1910,33 @@
         // Собираем все точки: пользователь -> адрес 1 -> адрес 2 -> ... -> последний адрес
         const routePoints = [userLocation, ...addresses.map(addr => [addr.lat, addr.lng])];
         
-        // Удаляем старый маршрут (полилинию)
-        if (routePolyline) {
-            yandexMap.geoObjects.remove(routePolyline);
-            routePolyline = null;
-        }
+        // Для 2ГИС используем простой подход - рисуем полилинию по точкам
+        // Построение маршрута по дорогам требует отдельного API запроса к routing API 2ГИС
+        drawSimplePolyline(routePoints);
         
-        // Если нет адресов, выходим
-        if (addresses.length === 0) return;
-        
-        // Используем API маршрутизации для построения маршрута по дорогам
-        try {
-            // Для Яндекс.Карт 2.1 используем ymaps.route для построения маршрута
-            ymaps.route(routePoints, {
-                mapStateAutoApply: false,
-                routingMode: 'auto', // автомобильный маршрут
-                avoidTraffic: false,  // учитывать пробки
-                apikey: ROUTING_API_KEY  // Ключ для маршрутизации
-            }).then(function(activeRoute) {
-                // Получаем координаты маршрута
-                const paths = activeRoute.getPaths();
-                paths.each(function(path) {
-                    const coordinates = path.geometry.getCoordinates();
-                    
-                    // Создаём полилинию с координатами маршрута (стиль как в Яндекс.Навигаторе)
-                    routePolyline = new ymaps.Polyline(
-                        coordinates,
-                        { hintContent: 'Маршрут от вашего местоположения по всем адресам' },
-                        { 
-                            strokeColor: '#3C63F2', 
-                            strokeWidth: 6, 
-                            strokeOpacity: 1.0,
-                            strokeStyle: 'solid'
-                        }
-                    );
-                    yandexMap.geoObjects.add(routePolyline);
-                });
-                
-                // Масштабируем карту чтобы показать весь маршрут
-                yandexMap.setBounds(activeRoute.getBounds(), { checkZoomRange: true });
-            }).catch(function(error) {
-                console.log('Ошибка построения маршрута по дорогам:', error);
-                // Если API маршрутизации недоступно, рисуем прямую линию
-                drawSimplePolyline(routePoints);
-                showToast('Маршрут по дорогам недоступен. Проверьте ключ API.');
-            });
-            
-        } catch (error) {
-            console.log('Ошибка построения маршрута:', error);
-            // Если API маршрутизации недоступно, рисуем прямую линию
-            drawSimplePolyline(routePoints);
-        }
+        // Масштабируем карту чтобы показать весь маршрут
+        const allPoints = [...routePoints];
+        const bounds = DG.latLngBounds(allPoints);
+        yandexMap.fitBounds(bounds, { padding: [50, 50, 50, 50] });
     }
     
-    // Функция для рисования простой полилинии (резервный вариант)
+    // Функция для рисования полилинии (маршрут)
     function drawSimplePolyline(points) {
         if (routePolyline) {
-            yandexMap.geoObjects.remove(routePolyline);
+            yandexMap.removeLayer(routePolyline);
         }
         
-        routePolyline = new ymaps.Polyline(
-            points,
-            { hintContent: 'Маршрут (прямая линия)' },
-            { 
-                strokeColor: '#3C63F2', 
-                strokeWidth: 4, 
-                strokeOpacity: 0.8,
-                strokeStyle: 'dash'
-            }
-        );
-        
-        yandexMap.geoObjects.add(routePolyline);
+        routePolyline = DG.polyline(points, {
+            color: '#3C63F2',
+            weight: 6,
+            opacity: 1.0
+        }).addTo(yandexMap);
     }
 
     function updateMarkers() {
         if (!yandexMap) { setTimeout(updateMarkers, 500); return; }
-        yandexMap.geoObjects.removeAll();
+        // Очищаем маркеры
+        ymapMarkers.forEach(marker => yandexMap.removeLayer(marker));
         ymapMarkers = [];
         addresses.forEach((addr, i) => addMarkerToMap(addr, i + 1));
         document.getElementById('addrCount').textContent = addresses.length;
@@ -2015,12 +1946,34 @@
     function addMarkerToMap(addr, index) {
         if (!addr.lat || !addr.lng || !yandexMap) return;
         try {
-            const marker = new ymaps.Placemark(
-                [addr.lat, addr.lng],
-                { iconContent: String(index), balloonContentHeader: 'Адрес #' + index, balloonContentBody: addr.text, hintContent: addr.text },
-                { preset: getMarkerPreset(index) }
-            );
-            yandexMap.geoObjects.add(marker);
+            const color = getMarkerColor(index);
+            const markerHtml = `
+                <div style="
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    background: ${color};
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 800;
+                    font-size: 15px;
+                    color: white;
+                    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+                    border: 2px solid white;
+                ">${index}</div>
+            `;
+            
+            const marker = DG.marker([addr.lat, addr.lng], {
+                icon: DG.divIcon({
+                    html: markerHtml,
+                    className: 'custom-marker',
+                    iconSize: [36, 36],
+                    iconAnchor: [18, 18]
+                })
+            }).addTo(yandexMap);
+            
+            marker.bindPopup(`<b>Адрес #${index}</b><br>${addr.text}`);
             ymapMarkers.push(marker);
         } catch (e) { console.error('Error adding marker:', e); }
     }
@@ -2043,13 +1996,9 @@
         
         if (allPoints.length === 0) return;
         
-        // Вычисляем границы всех точек
-        const bounds = [
-            [Math.min(...allPoints.map(p => p[0])), Math.min(...allPoints.map(p => p[1]))],
-            [Math.max(...allPoints.map(p => p[0])), Math.max(...allPoints.map(p => p[1]))]
-        ];
-        
-        yandexMap.setBounds(bounds, { checkZoomRange: true, zoomMargin: 50 });
+        // Используем fitBounds для показа всех точек
+        const bounds = DG.latLngBounds(allPoints);
+        yandexMap.fitBounds(bounds, { padding: [50, 50, 50, 50] });
     }
 
     function mapZoomIn() { if (yandexMap) yandexMap.setZoom(yandexMap.getZoom() + 1, { duration: 200 }); }
@@ -2101,7 +2050,7 @@
 
         if (tab === 'shift') updateShiftUI();
         if (tab === 'stats') renderStats();
-        if (tab === 'list' && yandexMap) setTimeout(() => yandexMap.container.fitToViewport(), 100);
+        if (tab === 'list' && yandexMap) setTimeout(() => yandexMap.invalidateSize(), 100);
     }
 
     function handleImageUpload(event) {
@@ -2247,29 +2196,28 @@
 
     async function geocodeAddress(rawAddress) {
         const cleaned = cleanAddressForSearch(rawAddress);
-        const queries = [`Москва, ${cleaned}`, cleaned, `Москва ${cleaned}`, `г. Москва, ${cleaned}`];
-        const streetMatch = cleaned.match(/(?:ул|пр|пер|бул|ш|наб|пл|пр-т|пр-кт)\.?\s+[^,\n]+/i);
-        if (streetMatch) queries.push(`Москва, ${streetMatch[0]}`);
-
-        for (const query of queries) {
-            try {
-                const result = await ymaps.geocode(query, { 
-                    results: 3, 
-                    boundedBy: [[55.14, 36.89], [56.02, 37.96]], 
-                    strictBounds: false,
-                    apikey: GEOCODER_API_KEY
-                });
-                const firstResult = result.geoObjects.get(0);
-                if (firstResult) {
-                    const coords = firstResult.geometry.getCoordinates();
-                    const lat = coords[0], lng = coords[1];
-                    if (lat >= 55.3 && lat <= 56.1 && lng >= 37.0 && lng <= 38.1) return { lat, lng };
+        const query = `Москва, ${cleaned}`;
+        
+        try {
+            // Используем геокодер 2ГИС через их API
+            const response = await fetch(`https://catalog.api.2gis.com/3.0/items/geocoder?key=547674c5-99e3-40b6-8039-ee711071640c&q=${encodeURIComponent(query)}&fields=items.point`);
+            const data = await response.json();
+            
+            if (data.result && data.result.items && data.result.items.length > 0) {
+                const item = data.result.items[0];
+                if (item.point) {
+                    const lng = item.point.lon;
+                    const lat = item.point.lat;
+                    // Проверка что координаты в Москве
+                    if (lat >= 55.3 && lat <= 56.1 && lng >= 37.0 && lng <= 38.1) {
+                        return { lat, lng };
+                    }
                 }
-            } catch (e) {
-                console.log('Ошибка геокодирования:', e);
             }
-            await sleep(500);
+        } catch (e) {
+            console.log('Ошибка геокодирования 2ГИС:', e);
         }
+        
         return null;
     }
 
@@ -2313,7 +2261,7 @@
     function toggleMap() {
         const section = document.getElementById('mapSection');
         section.classList.toggle('expanded');
-        setTimeout(() => { if (yandexMap) yandexMap.container.fitToViewport(); }, 450);
+        setTimeout(() => { if (yandexMap) yandexMap.invalidateSize(); }, 450);
     }
 
     function showToast(message, type = '') {
