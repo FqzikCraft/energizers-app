@@ -8,6 +8,15 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://api-maps.yandex.ru/2.1/?apikey=25c3cc9b-776d-4fac-a6c1-753874b63e20&lang=ru_RU" type="text/javascript"></script>
+    <script type="text/javascript">
+        // Дожидаемся полной загрузки API Яндекс Карт перед использованием templateLayoutFactory
+        var ymapsApiReady = false;
+        if (typeof ymaps !== 'undefined') {
+            ymaps.ready(function() {
+                ymapsApiReady = true;
+            });
+        }
+    </script>
     <style>
         @import url('https://fontsource.roboto/files/roboto-cyrillic-400-normal.woff2');
 
@@ -508,7 +517,7 @@
             transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .map-section.expanded { height: 60vh; }
+        .map-section.expanded { height: calc(100vh - 56px); }
 
         .map-toggle {
             position: absolute;
@@ -1932,30 +1941,55 @@
         if (!addr.lat || !addr.lng || !ymap) return;
         try {
             const color = getMarkerColor(index);
-            const presetColors = {
-                '#3C63F2': 'islands#blueCircleDotIcon',
-                '#2B4CC2': 'islands#darkBlueCircleDotIcon',
-                '#8B5CF6': 'islands#violetCircleDotIcon',
-                '#EC4899': 'islands#pinkCircleDotIcon',
-                '#FC3F1D': 'islands#redCircleDotIcon',
-                '#4CAF50': 'islands#greenCircleDotIcon',
-                '#F59E0B': 'islands#orangeCircleDotIcon',
-                '#9333EA': 'islands#purpleCircleDotIcon',
-                '#06B6D4': 'islands#cyanCircleDotIcon',
-                '#EAB308': 'islands#yellowCircleDotIcon'
-            };
-            const preset = presetColors[color] || 'islands#blueCircleDotIcon';
+            
+            // Создаём кастомный макет маркера с цифрой через HTML
+            const customLayout = ymaps.templateLayoutFactory.createClass(
+                `<div style="
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    background: ${color};
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 800;
+                    font-size: 15px;
+                    color: white;
+                    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+                    border: 2px solid white;
+                ">${index}</div>`
+            );
             
             const placemark = new ymaps.Placemark([addr.lat, addr.lng], {
-                hintContent: addr.text,
+                hintContent: `#${index}: ${addr.text}`,
                 balloonContent: `<b>Адрес #${index}</b><br>${addr.text}`
             }, {
-                preset: preset
+                iconLayout: new customLayout(),
+                iconShape: {
+                    type: 'Circle',
+                    coordinates: [0, 0],
+                    radius: 18
+                }
             });
             
             ymap.geoObjects.add(placemark);
             ymapMarkers.push({ type: 'address', index: index, object: placemark });
-        } catch (e) { console.error('Error adding marker:', e); }
+        } catch (e) { 
+            console.error('Error adding marker:', e); 
+            // Fallback: используем стандартный маркер если templateLayoutFactory не доступен
+            try {
+                const placemark = new ymaps.Placemark([addr.lat, addr.lng], {
+                    hintContent: `#${index}: ${addr.text}`,
+                    balloonContent: `<b>Адрес #${index}</b><br>${addr.text}`
+                }, {
+                    preset: 'islands#blueCircleIcon'
+                });
+                ymap.geoObjects.add(placemark);
+                ymapMarkers.push({ type: 'address', index: index, object: placemark });
+            } catch (e2) {
+                console.error('Fallback also failed:', e2);
+            }
+        }
     }
 
     function fitAllMarkers() {
@@ -2255,11 +2289,13 @@
         const item = searchHistory[index];
         if (!item) return;
         
-        // Добавляем адрес на карту
+        // Очищаем текущие адреса и восстанавливаем из истории
+        addresses = [];
+        // Добавляем все адреса из истории (можно добавить цикл если нужно несколько)
         addresses.push({ text: item.text, lat: item.lat, lng: item.lng });
         updateRouteAndMarkers();
         setTimeout(() => fitAllMarkers(), 300);
-        showToast('Адрес добавлен ✓', 'success');
+        showToast('Адрес восстановлен из истории ✓', 'success');
     }
 
     function clearSearchHistory() {
@@ -2296,7 +2332,11 @@
         let geocoded = 0, failed = 0;
         for (const line of lines) {
             const coords = await geocodeAddress(line);
-            if (coords) { addresses.push({ text: line, lat: coords.lat, lng: coords.lng }); geocoded++; }
+            if (coords) { 
+                addresses.push({ text: line, lat: coords.lat, lng: coords.lng }); 
+                addToSearchHistory(line, coords);
+                geocoded++; 
+            }
             else failed++;
             await sleep(1200);
         }
@@ -2309,7 +2349,15 @@
     function toggleMap() {
         const section = document.getElementById('mapSection');
         section.classList.toggle('expanded');
-        setTimeout(() => { if (ymap) ymap.invalidateSize(); }, 450);
+        setTimeout(() => { 
+            if (ymap) {
+                ymap.invalidateSize();
+                // После раскрытия карты заново центрируем на всех маркерах
+                if (addresses.length > 0 || userLocation) {
+                    fitAllMarkers();
+                }
+            }
+        }, 450);
     }
 
     function showToast(message, type = '') {
@@ -2323,6 +2371,7 @@
     // Init
     window.addEventListener('DOMContentLoaded', () => {
         updateShiftUI();
+        loadSearchHistory();
         // Update shift badge every minute
         setInterval(updateShiftUI, 60000);
     });
