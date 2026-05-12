@@ -6,9 +6,8 @@
     <title>Энерджайзеры</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=25c3cc9b-776d-4fac-a6c1-753874b63e20&lang=ru_RU" type="text/javascript"></script>
     <style>
         @import url('https://fontsource.roboto/files/roboto-cyrillic-400-normal.woff2');
 
@@ -1135,6 +1134,16 @@
             <input type="text" class="manual-input" id="manualInput" placeholder="Введите адрес..." onkeypress="if(event.key==='Enter') addManualAddress()">
             <button class="add-btn" onclick="addManualAddress()">+</button>
         </div>
+        
+        <!-- История поиска -->
+        <div class="search-history-section" id="searchHistorySection" style="display:none; margin-top:16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                <div style="font-size:13px; color:var(--text-secondary); font-weight:600;">История поиска:</div>
+                <button class="clear-btn" onclick="clearSearchHistory()">Очистить</button>
+            </div>
+            <div class="extracted-list" id="searchHistoryList" style="max-height:150px;"></div>
+        </div>
+        
         <div class="bulk-input-area">
             <div style="font-size:13px; color:var(--text-secondary); margin-bottom:8px; font-weight:600;">Массовый ввод:</div>
             <textarea class="bulk-textarea" id="bulkInput" placeholder="ул. Пушкина, д. 10&#10;пр. Ленина, д. 25, кв. 3"></textarea>
@@ -1290,7 +1299,8 @@
     let addresses = [];
     let ymapMarkers = [];
     let extractedItems = [];
-    let yandexMap = null;
+    let searchHistory = [];
+    
     let mapReady = false;
     let userLocation = null;
     let routePolyline = null;
@@ -1818,42 +1828,43 @@
         return false;
     }
 
-    // Инициализация карты Leaflet с OpenStreetMap
-    let routingControl = null;
+    // Инициализация карты Яндекс с использованием Yandex Maps API 2.1
+    let ymap = null;
     
-    yandexMap = L.map('map', {
-        center: [55.7558, 37.6173],
-        zoom: 10
-    });
+    ymaps.ready(initYandexMap);
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(yandexMap);
-    
-    mapReady = true;
-    userLocation = null;
-    ymapMarkers = [];
-    routePolyline = null;
-    
-    // Получаем текущую геолокацию пользователя
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                userLocation = [position.coords.latitude, position.coords.longitude];
-                addUserLocationMarker();
-                // Центрируем карту на пользователе
-                yandexMap.setView(userLocation, 12);
-                updateRouteAndMarkers();
-            },
-            function(error) {
-                console.log('Геолокация недоступна:', error);
-                showToast('Геолокация недоступна. Проверьте разрешения браузера.');
-            },
-            { enableHighAccuracy: true, timeout: 10000 }
-        );
+    function initYandexMap() {
+        ymap = new ymaps.Map('map', {
+            center: [55.7558, 37.6173],
+            zoom: 10,
+            controls: ['zoomControl', 'geolocationControl']
+        });
+        
+        mapReady = true;
+        userLocation = null;
+        ymapMarkers = [];
+        routePolyline = null;
+        
+        // Получаем текущую геолокацию пользователя
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    userLocation = [position.coords.latitude, position.coords.longitude];
+                    addUserLocationMarker();
+                    // Центрируем карту на пользователе
+                    ymap.setCenter(userLocation, 12);
+                    updateRouteAndMarkers();
+                },
+                function(error) {
+                    console.log('Геолокация недоступна:', error);
+                    showToast('Геолокация недоступна. Проверьте разрешения браузера.');
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+        
+        if (addresses.length > 0) updateRouteAndMarkers();
     }
-    
-    if (addresses.length > 0) updateRouteAndMarkers();
 
     function getMarkerColor(index) {
         const colors = ['#3C63F2', '#2B4CC2', '#8B5CF6', '#EC4899', '#FC3F1D', '#4CAF50', '#F59E0B', '#9333EA', '#06B6D4', '#EAB308'];
@@ -1861,44 +1872,28 @@
     }
 
     function addUserLocationMarker() {
-        if (!userLocation || !yandexMap) return;
+        if (!userLocation || !ymap) return;
         try {
-            // Создаём кастомный маркер пользователя для Leaflet
-            const userIcon = L.divIcon({
-                html: `<div style="
-                    width: 0;
-                    height: 0;
-                    border-left: 16px solid transparent;
-                    border-right: 16px solid transparent;
-                    border-bottom: 32px solid #3C63F2;
-                    filter: drop-shadow(0 3px 6px rgba(60,99,242,0.6));
-                    transform-origin: center bottom;
-                "></div>`,
-                className: 'user-location-marker',
-                iconSize: [32, 32],
-                iconAnchor: [16, 32]
+            // Создаём маркер пользователя для Яндекс Карты
+            const userPlacemark = new ymaps.Placemark(userLocation, {
+                hintContent: 'Ваше местоположение',
+                balloonContent: 'Ваше местоположение'
+            }, {
+                preset: 'islands#blueCircleDotIcon'
             });
             
-            const userMarker = L.marker(userLocation, { icon: userIcon }).addTo(yandexMap);
-            userMarker.bindPopup('Ваше местоположение');
+            ymap.geoObjects.add(userPlacemark);
+            ymapMarkers.push({ type: 'user', object: userPlacemark });
         } catch (e) { 
             console.error('Error adding user location marker:', e); 
         }
     }
 
     async function updateRouteAndMarkers() {
-        if (!yandexMap) { setTimeout(updateRouteAndMarkers, 500); return; }
-        // Очищаем все маркеры и полилинии
-        ymapMarkers.forEach(marker => yandexMap.removeLayer(marker));
+        if (!ymap) { setTimeout(updateRouteAndMarkers, 500); return; }
+        // Очищаем все маркеры
+        ymapMarkers.forEach(item => ymap.geoObjects.remove(item.object));
         ymapMarkers = [];
-        if (routePolyline) {
-            yandexMap.removeLayer(routePolyline);
-            routePolyline = null;
-        }
-        if (routingControl) {
-            yandexMap.removeControl(routingControl);
-            routingControl = null;
-        }
         
         // Добавляем маркер пользователя
         addUserLocationMarker();
@@ -1906,46 +1901,27 @@
         // Добавляем маркеры адресов
         addresses.forEach((addr, i) => addMarkerToMap(addr, i + 1));
         
-        // Строим маршрут от пользователя к адресам
-        await buildRoute();
-        
         document.getElementById('addrCount').textContent = addresses.length;
         updateAddressList();
     }
 
     async function buildRoute() {
-        if (!userLocation || addresses.length === 0) return;
-        
-        // Собираем все точки: пользователь -> адрес 1 -> адрес 2 -> ... -> последний адрес
-        const waypoints = [
-            L.latLng(userLocation[0], userLocation[1]),
-            ...addresses.map(addr => L.latLng(addr.lat, addr.lng))
-        ];
-        
-        // Используем Leaflet Routing Machine для построения маршрута по дорогам
-        routingControl = L.Routing.control({
-            waypoints: waypoints,
-            routeWhileDragging: false,
-            showAlternatives: false,
-            fitSelectedRoutes: true,
-            createMarker: function() { return null; }, // Не создаём свои маркеры, используем наши
-            lineOptions: {
-                styles: [{ color: '#3C63F2', opacity: 1.0, weight: 6 }]
-            },
-            addWaypoints: false,
-            draggableWaypoints: false
-        }).addTo(yandexMap);
-        
-        // Масштабируем карту чтобы показать весь маршрут
-        const allPoints = [userLocation, ...addresses.map(addr => [addr.lat, addr.lng])];
-        const group = new L.featureGroup(allPoints.map(p => L.marker(p)));
-        yandexMap.fitBounds(group.getBounds(), { padding: [50, 50, 50, 50] });
+        // Функция построения маршрута удалена - прокладка пути отключена
+        // Масштабируем карту чтобы показать все маркеры
+        if (addresses.length > 0 || userLocation) {
+            const allPoints = userLocation ? [userLocation] : [];
+            addresses.forEach(addr => allPoints.push([addr.lat, addr.lng]));
+            
+            if (allPoints.length > 0) {
+                ymap.setBounds(ymap.geoObjects.getBounds(), { padding: [50, 50, 50, 50] });
+            }
+        }
     }
 
     function updateMarkers() {
-        if (!yandexMap) { setTimeout(updateMarkers, 500); return; }
+        if (!ymap) { setTimeout(updateMarkers, 500); return; }
         // Очищаем маркеры
-        ymapMarkers.forEach(marker => yandexMap.removeLayer(marker));
+        ymapMarkers.forEach(item => ymap.geoObjects.remove(item.object));
         ymapMarkers = [];
         addresses.forEach((addr, i) => addMarkerToMap(addr, i + 1));
         document.getElementById('addrCount').textContent = addresses.length;
@@ -1953,37 +1929,37 @@
     }
 
     function addMarkerToMap(addr, index) {
-        if (!addr.lat || !addr.lng || !yandexMap) return;
+        if (!addr.lat || !addr.lng || !ymap) return;
         try {
             const color = getMarkerColor(index);
-            const markerIcon = L.divIcon({
-                html: `<div style="
-                    width: 36px;
-                    height: 36px;
-                    border-radius: 50%;
-                    background: ${color};
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: 800;
-                    font-size: 15px;
-                    color: white;
-                    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-                    border: 2px solid white;
-                ">${index}</div>`,
-                className: 'custom-marker',
-                iconSize: [36, 36],
-                iconAnchor: [18, 18]
+            const presetColors = {
+                '#3C63F2': 'islands#blueCircleDotIcon',
+                '#2B4CC2': 'islands#darkBlueCircleDotIcon',
+                '#8B5CF6': 'islands#violetCircleDotIcon',
+                '#EC4899': 'islands#pinkCircleDotIcon',
+                '#FC3F1D': 'islands#redCircleDotIcon',
+                '#4CAF50': 'islands#greenCircleDotIcon',
+                '#F59E0B': 'islands#orangeCircleDotIcon',
+                '#9333EA': 'islands#purpleCircleDotIcon',
+                '#06B6D4': 'islands#cyanCircleDotIcon',
+                '#EAB308': 'islands#yellowCircleDotIcon'
+            };
+            const preset = presetColors[color] || 'islands#blueCircleDotIcon';
+            
+            const placemark = new ymaps.Placemark([addr.lat, addr.lng], {
+                hintContent: addr.text,
+                balloonContent: `<b>Адрес #${index}</b><br>${addr.text}`
+            }, {
+                preset: preset
             });
             
-            const marker = L.marker([addr.lat, addr.lng], { icon: markerIcon }).addTo(yandexMap);
-            marker.bindPopup(`<b>Адрес #${index}</b><br>${addr.text}`);
-            ymapMarkers.push(marker);
+            ymap.geoObjects.add(placemark);
+            ymapMarkers.push({ type: 'address', index: index, object: placemark });
         } catch (e) { console.error('Error adding marker:', e); }
     }
 
     function fitAllMarkers() {
-        if (!yandexMap) return;
+        if (!ymap) return;
         const allPoints = [];
         
         // Добавляем позицию пользователя
@@ -2000,13 +1976,12 @@
         
         if (allPoints.length === 0) return;
         
-        // Используем fitBounds для показа всех точек
-        const group = new L.featureGroup(allPoints.map(p => L.marker(p)));
-        yandexMap.fitBounds(group.getBounds(), { padding: [50, 50, 50, 50] });
+        // Используем setBounds для показа всех точек
+        ymap.setBounds(allPoints, { padding: [50, 50, 50, 50] });
     }
 
-    function mapZoomIn() { if (yandexMap) yandexMap.setZoom(yandexMap.getZoom() + 1); }
-    function mapZoomOut() { if (yandexMap) yandexMap.setZoom(yandexMap.getZoom() - 1); }
+    function mapZoomIn() { if (ymap) ymap.setZoom(ymap.getZoom() + 1); }
+    function mapZoomOut() { if (ymap) ymap.setZoom(ymap.getZoom() - 1); }
 
     function updateAddressList() {
         const container = document.getElementById('addressList');
@@ -2031,9 +2006,13 @@
 
     function locateAddress(idx) {
         const addr = addresses[idx];
-        if (!addr.lat || !addr.lng || !yandexMap) return;
-        yandexMap.setView([addr.lat, addr.lng], 16);
-        if (ymapMarkers[idx]) setTimeout(() => ymapMarkers[idx].openPopup(), 350);
+        if (!addr.lat || !addr.lng || !ymap) return;
+        ymap.setCenter([addr.lat, addr.lng], 16);
+        // Находим маркер и открываем балун
+        const markerItem = ymapMarkers.find(item => item.type === 'address' && item.index === idx + 1);
+        if (markerItem) {
+            setTimeout(() => markerItem.object.balloon.open(), 350);
+        }
         const mapSection = document.getElementById('mapSection');
         if (!mapSection.classList.contains('expanded')) mapSection.classList.add('expanded');
     }
@@ -2054,7 +2033,7 @@
 
         if (tab === 'shift') updateShiftUI();
         if (tab === 'stats') renderStats();
-        if (tab === 'list' && yandexMap) setTimeout(() => yandexMap.invalidateSize(), 100);
+        if (tab === 'list' && ymap) setTimeout(() => ymap.invalidateSize(), 100);
     }
 
     function handleImageUpload(event) {
@@ -2226,6 +2205,70 @@
 
     function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Функции для работы с историей поиска
+    function loadSearchHistory() {
+        try {
+            searchHistory = JSON.parse(localStorage.getItem('energizer_search_history') || '[]');
+        } catch(e) { searchHistory = []; }
+        renderSearchHistory();
+    }
+
+    function saveSearchHistory() {
+        localStorage.setItem('energizer_search_history', JSON.stringify(searchHistory));
+        renderSearchHistory();
+    }
+
+    function addToSearchHistory(text, coords) {
+        // Удаляем если уже есть такой адрес
+        searchHistory = searchHistory.filter(item => item.text !== text);
+        // Добавляем в начало
+        searchHistory.unshift({ text, lat: coords.lat, lng: coords.lng, timestamp: Date.now() });
+        // Оставляем только последние 20 записей
+        if (searchHistory.length > 20) searchHistory = searchHistory.slice(0, 20);
+        saveSearchHistory();
+    }
+
+    function renderSearchHistory() {
+        const section = document.getElementById('searchHistorySection');
+        const list = document.getElementById('searchHistoryList');
+        
+        if (searchHistory.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+        
+        section.style.display = 'block';
+        list.innerHTML = searchHistory.map((item, i) => `
+            <div class="extracted-item" onclick="selectFromHistory(${i})">
+                <div class="item-text">${escapeHtml(item.text)}</div>
+            </div>
+        `).join('');
+    }
+
+    function selectFromHistory(index) {
+        const item = searchHistory[index];
+        if (!item) return;
+        
+        // Добавляем адрес на карту
+        addresses.push({ text: item.text, lat: item.lat, lng: item.lng });
+        updateRouteAndMarkers();
+        setTimeout(() => fitAllMarkers(), 300);
+        showToast('Адрес добавлен ✓', 'success');
+    }
+
+    function clearSearchHistory() {
+        searchHistory = [];
+        localStorage.removeItem('energizer_search_history');
+        renderSearchHistory();
+        showToast('История очищена');
+    }
+
     async function addManualAddress() {
         const input = document.getElementById('manualInput');
         const text = input.value.trim();
@@ -2235,6 +2278,8 @@
         const coords = await geocodeAddress(text);
         if (coords) {
             addresses.push({ text, lat: coords.lat, lng: coords.lng });
+            // Сохраняем в историю
+            addToSearchHistory(text, coords);
             updateRouteAndMarkers();
             setTimeout(() => fitAllMarkers(), 300);
             showToast('Адрес добавлен ✓', 'success');
@@ -2264,7 +2309,7 @@
     function toggleMap() {
         const section = document.getElementById('mapSection');
         section.classList.toggle('expanded');
-        setTimeout(() => { if (yandexMap) yandexMap.invalidateSize(); }, 450);
+        setTimeout(() => { if (ymap) ymap.invalidateSize(); }, 450);
     }
 
     function showToast(message, type = '') {
